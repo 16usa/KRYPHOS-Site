@@ -415,14 +415,60 @@
   window.addEventListener('resize', resetFx, { passive: true });
 
   /* ---------------------------------------------------------
-     OPTIONAL LIVE SOLANA STATE
-     Blank addresses = no fake data / no RPC calls.
+     LIVE ON-CHAIN VERIFICATION
+     Uses only the already-published KRYPHOS mechanics:
+     Mint, total supply, Burn Vault, completed burns,
+     Program, upgrade authority, no-withdraw design,
+     permissionless burn design.
   --------------------------------------------------------- */
+  const SOLSCAN = 'https://solscan.io';
+  const verifyLiveState = document.getElementById('verifyLiveState');
+  const verifyLiveText = document.getElementById('verifyLiveText');
+  const verifyMintAddress = document.getElementById('verifyMintAddress');
+  const verifyVaultAddress = document.getElementById('verifyVaultAddress');
+  const verifyProgramAddress = document.getElementById('verifyProgramAddress');
+  const verifyTotalSupply = document.getElementById('verifyTotalSupply');
+  const verifyVaultBalance = document.getElementById('verifyVaultBalance');
+  const verifyMintLink = document.getElementById('verifyMintLink');
+  const verifyVaultLink = document.getElementById('verifyVaultLink');
+  const verifyProgramLink = document.getElementById('verifyProgramLink');
+  const vaultProofText = document.getElementById('vaultProofText');
+  const vaultProofStatus = document.getElementById('vaultProofStatus');
+  const burnProofText = document.getElementById('burnProofText');
+  const burnProofStatus = document.getElementById('burnProofStatus');
+  const burnTxList = document.getElementById('burnTxList');
+  const upgradeProofText = document.getElementById('upgradeProofText');
+  const upgradeProofStatus = document.getElementById('upgradeProofStatus');
+
+  let mintDecimals = 0;
+
+  function shortAddress(value, head = 6, tail = 6) {
+    if (!value || value.length <= head + tail + 3) return value || 'Not configured';
+    return `${value.slice(0, head)}…${value.slice(-tail)}`;
+  }
+
+  function setExplorerLink(el, path) {
+    if (!el || !path) return;
+    el.href = `${SOLSCAN}${path}`;
+    el.hidden = false;
+  }
+
+  function setVerifyStatus(el, text, state) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = `verify-status ${state}`;
+  }
+
+  function setLiveState(text, state = 'waiting') {
+    if (verifyLiveText) verifyLiveText.textContent = text;
+    if (verifyLiveState) verifyLiveState.className = `verify-live-state ${state}`;
+  }
+
   async function rpc(method, params) {
     const r = await fetch(cfg.rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jsonrpc:'2.0', id:1, method, params})
     });
     if (!r.ok) throw new Error(`RPC ${r.status}`);
     const data = await r.json();
@@ -430,43 +476,296 @@
     return data.result;
   }
 
-  async function refreshChain() {
-    const hasMint = typeof cfg.mintAddress === 'string' && cfg.mintAddress.trim();
-    const hasVault = typeof cfg.burnVaultTokenAccount === 'string' && cfg.burnVaultTokenAccount.trim();
-    const hasProgram = typeof cfg.programId === 'string' && cfg.programId.trim();
-    if (!hasMint && !hasVault && !hasProgram) return;
+  function decodeBase64(data) {
+    const raw = atob(data || '');
+    return Uint8Array.from(raw, ch => ch.charCodeAt(0));
+  }
 
-    const panel = document.getElementById('chainData');
-    panel.hidden = false;
-    document.getElementById('mintAddress').textContent = hasMint ? cfg.mintAddress : 'Not configured';
-    document.getElementById('vaultAddress').textContent = hasVault ? cfg.burnVaultTokenAccount : 'Not configured';
-    document.getElementById('programAddress').textContent = hasProgram ? cfg.programId : 'Not configured';
-    const note = document.getElementById('liveNote');
+  function encodeBase58(bytes) {
+    const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    if (!bytes || !bytes.length) return '';
+    const digits = [0];
+
+    for (const byte of bytes) {
+      let carry = byte;
+      for (let i = 0; i < digits.length; i++) {
+        const x = digits[i] * 256 + carry;
+        digits[i] = x % 58;
+        carry = Math.floor(x / 58);
+      }
+      while (carry > 0) {
+        digits.push(carry % 58);
+        carry = Math.floor(carry / 58);
+      }
+    }
+
+    let leading = 0;
+    while (leading < bytes.length && bytes[leading] === 0) leading++;
+
+    let result = '1'.repeat(leading);
+    for (let i = digits.length - 1; i >= 0; i--) result += alphabet[digits[i]];
+    return result;
+  }
+
+  function u32le(bytes, offset = 0) {
+    return (
+      bytes[offset] |
+      (bytes[offset + 1] << 8) |
+      (bytes[offset + 2] << 16) |
+      (bytes[offset + 3] << 24)
+    ) >>> 0;
+  }
+
+  async function readUpgradeAuthority(programId) {
+    const program = await rpc('getAccountInfo', [
+      programId,
+      { encoding:'base64', commitment:'confirmed' }
+    ]);
+
+    if (!program?.value) {
+      return { state:'missing', text:'Program account not found' };
+    }
+
+    if (!program.value.executable) {
+      return { state:'alert', text:'Program account is not executable' };
+    }
+
+    const programBytes = decodeBase64(program.value.data?.[0] || '');
+    if (programBytes.length < 36 || u32le(programBytes, 0) !== 2) {
+      return { state:'unknown', text:'Executable program · authority format unavailable' };
+    }
+
+    const programDataAddress = encodeBase58(programBytes.slice(4, 36));
+    const programData = await rpc('getAccountInfo', [
+      programDataAddress,
+      { encoding:'base64', commitment:'confirmed' }
+    ]);
+
+    if (!programData?.value) {
+      return { state:'unknown', text:'ProgramData account unavailable' };
+    }
+
+    const bytes = decodeBase64(programData.value.data?.[0] || '');
+    if (bytes.length < 13 || u32le(bytes, 0) !== 3) {
+      return { state:'unknown', text:'ProgramData authority format unavailable' };
+    }
+
+    const option = bytes[12];
+    if (option === 0) {
+      return { state:'immutable', text:'NONE · program is immutable' };
+    }
+
+    if (option === 1 && bytes.length >= 45) {
+      const authority = encodeBase58(bytes.slice(13, 45));
+      return { state:'authority', text:`${shortAddress(authority)} · upgrade authority present`, authority };
+    }
+
+    return { state:'unknown', text:'Upgrade authority unavailable' };
+  }
+
+  function collectParsedInstructions(tx) {
+    const outer = tx?.transaction?.message?.instructions || [];
+    const inner = (tx?.meta?.innerInstructions || []).flatMap(group => group?.instructions || []);
+    return [...outer, ...inner];
+  }
+
+  function burnAmountFromInstruction(ix) {
+    if (!ix?.parsed) return null;
+    const type = ix.parsed.type;
+    if (type !== 'burn' && type !== 'burnChecked') return null;
+
+    const info = ix.parsed.info || {};
+    if (info.tokenAmount?.uiAmountString != null) {
+      return Number(info.tokenAmount.uiAmountString);
+    }
+    if (info.tokenAmount?.amount != null) {
+      const d = Number(info.tokenAmount.decimals || mintDecimals || 0);
+      return Number(info.tokenAmount.amount) / (10 ** d);
+    }
+    if (info.amount != null) {
+      return Number(info.amount) / (10 ** Number(mintDecimals || 0));
+    }
+    return null;
+  }
+
+  async function loadBurnTransactions(vaultAddress) {
+    const signatures = await rpc('getSignaturesForAddress', [
+      vaultAddress,
+      { limit:24, commitment:'confirmed' }
+    ]);
+
+    const list = Array.isArray(signatures) ? signatures.filter(x => !x.err).slice(0, 18) : [];
+    if (!list.length) return [];
+
+    const txs = await Promise.all(list.map(async item => {
+      try {
+        const tx = await rpc('getTransaction', [
+          item.signature,
+          {
+            encoding:'jsonParsed',
+            commitment:'confirmed',
+            maxSupportedTransactionVersion:0
+          }
+        ]);
+
+        let amount = 0;
+        for (const ix of collectParsedInstructions(tx)) {
+          const v = burnAmountFromInstruction(ix);
+          if (Number.isFinite(v) && v > 0) amount += v;
+        }
+
+        if (amount <= 0) return null;
+        return {
+          signature:item.signature,
+          amount,
+          blockTime:item.blockTime || tx?.blockTime || null
+        };
+      } catch (_) {
+        return null;
+      }
+    }));
+
+    return txs.filter(Boolean);
+  }
+
+  function renderBurnTransactions(items) {
+    if (!burnTxList) return;
+    burnTxList.innerHTML = '';
+
+    if (!items.length) {
+      burnTxList.hidden = true;
+      return;
+    }
+
+    items.slice(0, 3).forEach(item => {
+      const a = document.createElement('a');
+      a.href = `${SOLSCAN}/tx/${item.signature}`;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = `${fmt(item.amount)} · ${shortAddress(item.signature, 5, 5)}`;
+      burnTxList.appendChild(a);
+    });
+
+    burnTxList.hidden = false;
+  }
+
+  async function refreshChain() {
+    const mint = typeof cfg.mintAddress === 'string' ? cfg.mintAddress.trim() : '';
+    const vault = typeof cfg.burnVaultTokenAccount === 'string' ? cfg.burnVaultTokenAccount.trim() : '';
+    const program = typeof cfg.programId === 'string' ? cfg.programId.trim() : '';
+
+    const hasMint = Boolean(mint);
+    const hasVault = Boolean(vault);
+    const hasProgram = Boolean(program);
+
+    verifyMintAddress.textContent = hasMint ? shortAddress(mint) : 'Not configured';
+    verifyVaultAddress.textContent = hasVault ? shortAddress(vault) : 'Not configured';
+    verifyProgramAddress.textContent = hasProgram ? shortAddress(program) : 'Not configured';
+
+    if (hasMint) setExplorerLink(verifyMintLink, `/token/${mint}`);
+    if (hasVault) setExplorerLink(verifyVaultLink, `/account/${vault}`);
+    if (hasProgram) setExplorerLink(verifyProgramLink, `/account/${program}`);
+
+    if (!hasMint && !hasVault && !hasProgram) {
+      setLiveState('Awaiting on-chain addresses', 'waiting');
+      setVerifyStatus(vaultProofStatus, 'WAITING', 'waiting');
+      setVerifyStatus(burnProofStatus, 'WAITING', 'waiting');
+      setVerifyStatus(upgradeProofStatus, 'WAITING', 'waiting');
+      return;
+    }
+
+    setLiveState('Reading Solana', 'live');
 
     try {
-      let vaultBalance;
+      let vaultBalance = null;
+      let burnTxs = [];
+
       if (hasMint) {
-        const s = await rpc('getTokenSupply', [cfg.mintAddress, { commitment: 'confirmed' }]);
-        const raw = Number(s?.value?.amount);
-        const decimals = Number(s?.value?.decimals || 0);
-        if (Number.isFinite(raw)) liveSupply = raw / (10 ** decimals);
+        const supply = await rpc('getTokenSupply', [
+          mint,
+          { commitment:'confirmed' }
+        ]);
+
+        const raw = Number(supply?.value?.amount);
+        mintDecimals = Number(supply?.value?.decimals || 0);
+
+        if (Number.isFinite(raw)) {
+          liveSupply = raw / (10 ** mintDecimals);
+          verifyTotalSupply.textContent = fmt(liveSupply);
+          setStats(vaultBalance);
+          renderSchedule();
+        }
       }
+
       if (hasVault) {
-        const v = await rpc('getTokenAccountBalance', [cfg.burnVaultTokenAccount, { commitment: 'confirmed' }]);
-        const raw = Number(v?.value?.amount);
-        const decimals = Number(v?.value?.decimals || 0);
-        if (Number.isFinite(raw)) vaultBalance = raw / (10 ** decimals);
+        const vaultData = await rpc('getTokenAccountBalance', [
+          vault,
+          { commitment:'confirmed' }
+        ]);
+
+        const raw = Number(vaultData?.value?.amount);
+        const decimals = Number(vaultData?.value?.decimals ?? mintDecimals ?? 0);
+
+        if (Number.isFinite(raw)) {
+          vaultBalance = raw / (10 ** decimals);
+          verifyVaultBalance.textContent = fmt(vaultBalance);
+          setStats(vaultBalance);
+        }
+
+        vaultProofText.textContent = Number.isFinite(vaultBalance)
+          ? `${fmt(vaultBalance)} tokens currently in Burn Vault`
+          : 'Burn Vault account is public on-chain';
+        setVerifyStatus(vaultProofStatus, 'VERIFIED', 'verified');
+
+        burnTxs = await loadBurnTransactions(vault);
+        renderBurnTransactions(burnTxs);
       }
-      setStats(vaultBalance);
-      renderSchedule();
-      note.textContent = `Live Solana state · updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      const burned = Math.max(0, Number(cfg.initialSupply || 1000000000) - liveSupply);
+      const completedStages = burnSchedule.filter(row => burned >= row[2]).length;
+
+      burnProofText.textContent = burnTxs.length
+        ? `${fmt(burned)} burned · ${completedStages}/10 stages · ${burnTxs.length} burn tx found`
+        : `${fmt(burned)} burned · ${completedStages}/10 stages`;
+
+      if (hasMint) {
+        setVerifyStatus(
+          burnProofStatus,
+          burned > 0 ? 'VERIFIED' : 'LIVE',
+          burned > 0 ? 'verified' : 'protocol'
+        );
+      }
+
+      if (hasProgram) {
+        const authority = await readUpgradeAuthority(program);
+
+        if (authority.state === 'immutable') {
+          upgradeProofText.textContent = authority.text;
+          setVerifyStatus(upgradeProofStatus, 'IMMUTABLE', 'verified');
+        } else if (authority.state === 'authority') {
+          upgradeProofText.textContent = authority.text;
+          setVerifyStatus(upgradeProofStatus, 'PRESENT', 'alert');
+        } else if (authority.state === 'alert' || authority.state === 'missing') {
+          upgradeProofText.textContent = authority.text;
+          setVerifyStatus(upgradeProofStatus, 'CHECK', 'alert');
+        } else {
+          upgradeProofText.textContent = authority.text;
+          setVerifyStatus(upgradeProofStatus, 'LIVE', 'protocol');
+        }
+      }
+
+      setLiveState(
+        `Solana live · ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`,
+        'live'
+      );
     } catch (err) {
-      note.textContent = `Live Solana state unavailable: ${err.message}`;
+      setLiveState(`RPC unavailable`, 'error');
+      if (vaultProofText && hasVault) vaultProofText.textContent = `Unable to read Solana: ${err.message}`;
     }
   }
 
   refreshChain();
-  if (cfg.refreshMs && (cfg.mintAddress || cfg.burnVaultTokenAccount)) {
+  if (cfg.refreshMs && (cfg.mintAddress || cfg.burnVaultTokenAccount || cfg.programId)) {
     setInterval(refreshChain, Math.max(15000, Number(cfg.refreshMs) || 30000));
   }
 })();

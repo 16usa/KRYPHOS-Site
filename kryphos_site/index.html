@@ -94,29 +94,95 @@
     </section>
 
     <section class="paper verification slide" data-slide="4">
-      <div class="wrap verification-grid">
-        <div class="verify-copy reveal">
-          <div class="section-kicker">VERIFICATION</div>
-          <h2 class="section-title">Public &amp;<br />Verifiable</h2>
+      <div class="wrap verification-live">
+        <div class="verify-head reveal">
+          <div>
+            <div class="section-kicker">VERIFICATION</div>
+            <h2 class="section-title">Public &amp;<br />Verifiable</h2>
+          </div>
+          <div class="verify-live-state" id="verifyLiveState">
+            <i></i>
+            <span id="verifyLiveText">Awaiting on-chain addresses</span>
+          </div>
         </div>
-        <div class="verify-list reveal">
-          <div><span>01</span><p>Burn Vault address is public</p></div>
-          <div><span>02</span><p>Every completed burn is visible on-chain</p></div>
-          <div><span>03</span><p>Upgrade authority can be removed after deployment</p></div>
-          <div><span>04</span><p>No vault withdrawal path in the published burn design</p></div>
-          <div><span>05</span><p>Burn execution can be permissionless</p></div>
-        </div>
-      </div>
 
-      <div class="wrap chain-data reveal" id="chainData" hidden>
-        <div><span>Mint</span><code id="mintAddress"></code></div>
-        <div><span>Burn Vault</span><code id="vaultAddress"></code></div>
-        <div><span>Program</span><code id="programAddress"></code></div>
-        <p class="live-note" id="liveNote">Reading live Solana state…</p>
+        <div class="verify-chain-strip reveal" aria-label="Live on-chain protocol state">
+          <div class="verify-chain-cell">
+            <span>Mint</span>
+            <code id="verifyMintAddress">Not configured</code>
+            <a id="verifyMintLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
+          </div>
+          <div class="verify-chain-cell">
+            <span>Total supply</span>
+            <strong id="verifyTotalSupply">1,000,000,000</strong>
+          </div>
+          <div class="verify-chain-cell">
+            <span>Burn Vault</span>
+            <code id="verifyVaultAddress">Not configured</code>
+            <a id="verifyVaultLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
+          </div>
+          <div class="verify-chain-cell">
+            <span>Vault balance</span>
+            <strong id="verifyVaultBalance">700,000,000</strong>
+          </div>
+          <div class="verify-chain-cell">
+            <span>Program</span>
+            <code id="verifyProgramAddress">Not configured</code>
+            <a id="verifyProgramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
+          </div>
+        </div>
+
+        <div class="verify-proof-list reveal">
+          <div class="verify-proof-row">
+            <span>01</span>
+            <div>
+              <b>Burn Vault address is public</b>
+              <small id="vaultProofText">Waiting for Burn Vault address</small>
+            </div>
+            <em id="vaultProofStatus" class="verify-status waiting">WAITING</em>
+          </div>
+
+          <div class="verify-proof-row">
+            <span>02</span>
+            <div>
+              <b>Every completed burn is visible on-chain</b>
+              <small id="burnProofText">0 burned · no on-chain proof loaded</small>
+              <div class="burn-tx-list" id="burnTxList" hidden></div>
+            </div>
+            <em id="burnProofStatus" class="verify-status waiting">WAITING</em>
+          </div>
+
+          <div class="verify-proof-row">
+            <span>03</span>
+            <div>
+              <b>Upgrade authority</b>
+              <small id="upgradeProofText">Waiting for Program ID</small>
+            </div>
+            <em id="upgradeProofStatus" class="verify-status waiting">WAITING</em>
+          </div>
+
+          <div class="verify-proof-row">
+            <span>04</span>
+            <div>
+              <b>No vault withdrawal path</b>
+              <small>Published burn design</small>
+            </div>
+            <em class="verify-status protocol">PROTOCOL</em>
+          </div>
+
+          <div class="verify-proof-row">
+            <span>05</span>
+            <div>
+              <b>Permissionless burn execution</b>
+              <small>Published burn design</small>
+            </div>
+            <em class="verify-status protocol">PROTOCOL</em>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="finale slide" data-slide="5">
+    <section class="finale slide data-slide="5">
       <div class="finale-inner reveal">
         <div class="section-kicker">FINAL SUPPLY</div>
         <div class="final-number">1B <span>→</span> 300M</div>
