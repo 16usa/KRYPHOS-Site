@@ -1,4 +1,9 @@
 modules = ["nodejs-24"]
+run = "cd kryphos_site && node server.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
 
 [deployment]
 router = "application"
@@ -7,9 +12,6 @@ deploymentTarget = "autoscale"
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
-
-[workflows]
-runButton = "Project"
 
 [agent]
 stack = "PNPM_WORKSPACE"
