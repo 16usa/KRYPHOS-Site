@@ -1,0 +1,6 @@
+run = "node server.js"
+entrypoint = "server.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="description" content="KRYPHOS — immutable burn mechanics, public and verifiable on-chain." />
+  <title>KRYPHOS — Immutable Burn Protocol</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <section class="hero" aria-label="KRYPHOS">
+      <div class="scene" id="scene" aria-hidden="true">
+        <img class="scene-image" src="assets/kryphos-hero.jpeg" alt="" draggable="false" />
+        <div class="door-glow"></div>
+        <canvas id="mistCanvas" class="fx mist"></canvas>
+        <div class="light-column"></div>
+        <canvas id="waterCanvas" class="fx water"></canvas>
+        <div class="scene-vignette"></div>
+      </div>
+      <h1 class="sr-only">KRYPHOS</h1>
+      <div class="scroll-mark" aria-hidden="true"><span></span></div>
+    </section>
+
+    <section class="paper protocol" id="protocol">
+      <div class="wrap intro-grid">
+        <div class="intro-copy reveal">
+          <div class="eyebrow">THE PROTOCOL</div>
+          <h2>Immutable<br />Burn Mechanics</h2>
+          <p>
+            A fixed supply. A transparent burn mechanism. Engineered for permanence.
+            KRYPHOS is built around a published schedule: no discretionary withdrawal
+            from the burn vault, no hidden release path, and every completed burn can
+            be verified on-chain.
+          </p>
+        </div>
+        <div class="core-stats reveal" aria-label="Token supply statistics">
+          <div class="metric"><span>Total supply</span><strong data-stat="initial">1,000,000,000</strong></div>
+          <div class="metric"><span>Locked in Burn Vault (PDA)</span><strong data-stat="vault">700,000,000</strong></div>
+          <div class="metric"><span>Circulating at genesis</span><strong>300,000,000</strong></div>
+          <div class="metric"><span>Final target supply</span><strong>300,000,000</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="paper mechanics">
+      <div class="wrap">
+        <div class="section-kicker reveal">MECHANICS</div>
+        <h2 class="section-title reveal">How It Works</h2>
+        <div class="steps">
+          <article class="step reveal">
+            <div class="step-no">01</div>
+            <h3>Mint 1B tokens</h3>
+            <p>A total supply of 1,000,000,000 KRYPHOS is created at genesis.</p>
+          </article>
+          <article class="step reveal">
+            <div class="step-no">02</div>
+            <h3>Lock 700M</h3>
+            <p>700,000,000 tokens are transferred into the immutable Burn Vault (PDA).</p>
+          </article>
+          <article class="step reveal">
+            <div class="step-no">03</div>
+            <h3>Reach a milestone</h3>
+            <p>Each published milestone corresponds to one predefined burn amount.</p>
+          </article>
+          <article class="step reveal">
+            <div class="step-no">04</div>
+            <h3>Vault reaches zero</h3>
+            <p>After all stages, 700M has been burned and total supply is 300M.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="paper schedule-section">
+      <div class="wrap">
+        <div class="section-kicker reveal">PUBLISHED SCHEDULE</div>
+        <h2 class="section-title reveal">Burn Schedule</h2>
+        <div class="schedule-wrap reveal">
+          <table class="schedule" aria-label="Burn schedule">
+            <thead>
+              <tr><th>Milestone</th><th>Burn</th><th>Total burned</th><th>Supply after burn</th></tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
+        </div>
+        <div class="progress-line reveal">
+          <span id="progressLabel">Protocol schedule</span>
+          <div class="track"><i id="progressBar"></i></div>
+          <strong id="progressPct">0%</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="paper verification">
+      <div class="wrap verification-grid">
+        <div class="verify-copy reveal">
+          <div class="section-kicker">VERIFICATION</div>
+          <h2 class="section-title">Public &amp;<br />Verifiable</h2>
+        </div>
+        <div class="verify-list reveal">
+          <div><span>01</span><p>Burn Vault address is public</p></div>
+          <div><span>02</span><p>Every completed burn is visible on-chain</p></div>
+          <div><span>03</span><p>Upgrade authority can be removed after deployment</p></div>
+          <div><span>04</span><p>No vault withdrawal path in the published burn design</p></div>
+          <div><span>05</span><p>Burn execution can be permissionless</p></div>
+        </div>
+      </div>
+
+      <div class="wrap chain-data reveal" id="chainData" hidden>
+        <div><span>Mint</span><code id="mintAddress"></code></div>
+        <div><span>Burn Vault</span><code id="vaultAddress"></code></div>
+        <div><span>Program</span><code id="programAddress"></code></div>
+        <p class="live-note" id="liveNote">Reading live Solana state…</p>
+      </div>
+    </section>
+
+    <section class="finale">
+      <div class="finale-inner reveal">
+        <div class="section-kicker">FINAL SUPPLY</div>
+        <div class="final-number">1B <span>→</span> 300M</div>
+        <p>700M permanently allocated to the published burn schedule.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
