@@ -21,6 +21,57 @@ body {
 }
 img { display:block; max-width:100%; }
 
+/* GLOBAL CINEMATIC INTERFERENCE — fixed above every slide */
+body::before,
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+}
+
+body::before {
+  opacity:.28;
+  mix-blend-mode:screen;
+  background-image:
+    repeating-radial-gradient(circle at 0 0,
+      rgba(255,255,255,.16) 0 1px,
+      rgba(0,0,0,.08) 1px 2px,
+      transparent 2px 4px),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.025) 0 1px,
+      rgba(0,0,0,.025) 1px 2px,
+      transparent 2px 4px
+    );
+  background-size:5px 5px, 7px 100%;
+  animation:kryphosNoise 180ms steps(2,end) infinite;
+}
+
+body::after {
+  opacity:.30;
+  mix-blend-mode:overlay;
+  background:
+    linear-gradient(to bottom,
+      transparent 0%,
+      transparent 46%,
+      rgba(255,255,255,.13) 49%,
+      rgba(255,255,255,.035) 50%,
+      rgba(0,0,0,.11) 51%,
+      transparent 54%,
+      transparent 100%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.045) 0,
+      rgba(255,255,255,.045) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  background-size:100% 16vh, 100% 4px;
+  animation:kryphosScan 3.4s linear infinite, kryphosFlicker 2.7s steps(1,end) infinite;
+}
+
 /* FULLSCREEN DECK */
 .deck { position:fixed; inset:0; overflow:hidden; background:var(--black); }
 
@@ -33,7 +84,7 @@ img { display:block; max-width:100%; }
   z-index:12;
 }
 .deck::before {
-  opacity:.14;
+  opacity:.05;
   mix-blend-mode:soft-light;
   background-image:
     radial-gradient(circle at 20% 20%, rgba(255,255,255,.22) 0 1px, transparent 1.4px),
@@ -45,7 +96,7 @@ img { display:block; max-width:100%; }
 }
 .deck::after {
   inset:0;
-  opacity:.18;
+  opacity:.06;
   mix-blend-mode:overlay;
   background:
     repeating-linear-gradient(
@@ -244,6 +295,33 @@ img { display:block; max-width:100%; }
 @keyframes scrollMark { 0%{transform:translateY(0);opacity:0} 20%{opacity:1} 70%{opacity:1} 100%{transform:translateY(72px);opacity:0} }
 @keyframes hintUp { 0%,100%{transform:translateY(2px);opacity:.45} 50%{transform:translateY(-4px);opacity:1} }
 
+
+@keyframes kryphosNoise {
+  0%   { transform:translate3d(0,0,0) scale(1.02); filter:contrast(110%); }
+  20%  { transform:translate3d(-1.2%,.8%,0) scale(1.03); filter:contrast(120%); }
+  40%  { transform:translate3d(.9%,-1.1%,0) scale(1.02); filter:contrast(105%); }
+  60%  { transform:translate3d(-.6%,1.3%,0) scale(1.03); filter:contrast(125%); }
+  80%  { transform:translate3d(1.1%,-.5%,0) scale(1.02); filter:contrast(112%); }
+  100% { transform:translate3d(0,0,0) scale(1.02); filter:contrast(110%); }
+}
+
+@keyframes kryphosScan {
+  0%   { background-position:0 -18vh, 0 0; }
+  100% { background-position:0 118vh, 0 0; }
+}
+
+@keyframes kryphosFlicker {
+  0%,100% { opacity:.28; }
+  9%  { opacity:.36; }
+  10% { opacity:.17; }
+  24% { opacity:.31; }
+  25% { opacity:.22; }
+  52% { opacity:.35; }
+  53% { opacity:.20; }
+  77% { opacity:.33; }
+  78% { opacity:.24; }
+}
+
 @keyframes grainShift {
   0% { transform:translate3d(0,0,0); }
   10% { transform:translate3d(-1.5%, 1%, 0); }
@@ -287,10 +365,16 @@ img { display:block; max-width:100%; }
 }
 
 @media (max-width:580px) {
-  .scene { inset:-2%; }
-  .scene-image { object-position:50% 47%; transform:scale(.72); }
+  .scene { inset:0; transform:none !important; }
+  .scene-image {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center center;
+    transform:scale(1.01);
+  }
   .door-glow { width:22%; }
-  .hero::before { opacity:1; top:42%; width:100%; font-size:min(13vw,58px); letter-spacing:.26em; text-indent:.26em; }
+  .hero::before { display:none !important; content:none !important; }
   .wrap { width:calc(100% - 28px); }
   .deck-ui { right:7px; }
   .deck-counter { display:none; }
@@ -344,7 +428,7 @@ img { display:block; max-width:100%; }
 }
 
 @media (max-width:390px) and (max-height:750px) {
-  .hero::before { font-size:min(12.4vw,52px); letter-spacing:.22em; text-indent:.22em; top:41.5%; }
+  .hero::before { display:none !important; content:none !important; }
   .intro-copy h2,.section-title { font-size:34px; }
   .intro-copy p { font-size:10.5px; }
   .metric strong { font-size:18px; }
@@ -357,6 +441,6 @@ img { display:block; max-width:100%; }
 
 @media (prefers-reduced-motion:reduce) {
   .slide { transition:opacity .25s ease; filter:none!important; transform:none!important; }
-  .deck::before,.deck::after,.scene,.door-glow,.light-column,.scroll-mark span,.swipe-hint span,.reveal { transition:none; animation:none; }
+  body::before,body::after,.deck::before,.deck::after,.scene,.door-glow,.light-column,.scroll-mark span,.swipe-hint span,.reveal { transition:none; animation:none; }
   .reveal { opacity:1; transform:none; filter:none; }
 }
