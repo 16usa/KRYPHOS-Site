@@ -39,6 +39,71 @@
   });
 
 
+
+  /* ---------------------------------------------------------
+     FORENSIC SCREENSHOT MARK
+     Generates a random per-tab session code locally.
+     The code is not sent anywhere; it simply becomes part of
+     the pixels captured by a screenshot.
+  --------------------------------------------------------- */
+  const forensicGrid = document.getElementById('forensicGrid');
+  const forensicTopLeft = document.getElementById('forensicTopLeft');
+  const forensicBottomRight = document.getElementById('forensicBottomRight');
+
+  function randomHex(bytes = 4) {
+    try {
+      const buf = new Uint8Array(bytes);
+      crypto.getRandomValues(buf);
+      return Array.from(buf, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    } catch (_) {
+      return Math.random().toString(16).slice(2, 2 + bytes * 2).toUpperCase().padEnd(bytes * 2, '0');
+    }
+  }
+
+  function getForensicSessionCode() {
+    const storageKey = 'kryphos_forensic_session_v1';
+    try {
+      let code = sessionStorage.getItem(storageKey);
+      if (!code) {
+        const raw = randomHex(6);
+        code = `KPH-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
+        sessionStorage.setItem(storageKey, code);
+      }
+      return code;
+    } catch (_) {
+      const raw = randomHex(6);
+      return `KPH-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
+    }
+  }
+
+  const forensicSessionCode = getForensicSessionCode();
+
+  function forensicStamp() {
+    const now = new Date();
+    const utc = now.toISOString().replace('T', ' ').slice(0, 19) + 'Z';
+    return { utc, compact: utc.slice(11, 19) };
+  }
+
+  if (forensicGrid) {
+    const count = innerWidth <= 580 ? 24 : 40;
+    forensicGrid.innerHTML = Array.from({ length: count }, (_, i) =>
+      `<span class="forensic-mark">KRYPHOS · ${forensicSessionCode} · <b data-forensic-time>${forensicStamp().compact}</b></span>`
+    ).join('');
+  }
+
+  function refreshForensicMark() {
+    const stamp = forensicStamp();
+    document.querySelectorAll('[data-forensic-time]').forEach(el => {
+      el.textContent = stamp.compact;
+    });
+    if (forensicTopLeft) forensicTopLeft.textContent = `KRYPHOS · ${forensicSessionCode}`;
+    if (forensicBottomRight) forensicBottomRight.textContent = stamp.utc;
+  }
+
+  refreshForensicMark();
+  setInterval(refreshForensicMark, 1000);
+
+
   const cfg = window.KRYPHOS_CONFIG || {};
   const burnSchedule = [
     ['$100K', 100000000, 100000000, 900000000],
