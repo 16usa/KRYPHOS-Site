@@ -641,3 +641,46 @@ button,
   .scene,.door-glow,.light-column,.scroll-mark span,.swipe-hint span,.reveal { transition:none; animation:none; }
   .reveal { opacity:1; transform:none; filter:none; }
 }
+
+
+/* FORENSIC MINT + COUNTDOWN */
+.forensic-corner.top-left {
+  width:min(92vw,760px);
+  max-width:none;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  line-height:1.35;
+}
+
+.forensic-corner.bottom-right {
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.18em;
+  font-size:8px;
+  opacity:.34;
+}
+
+.forensic-mark {
+  max-width:300px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+@media (max-width:580px) {
+  .forensic-corner.top-left {
+    width:88vw;
+    font-size:5.5px;
+    line-height:1.35;
+    opacity:.26;
+  }
+
+  .forensic-corner.bottom-right {
+    font-size:7px;
+    opacity:.36;
+  }
+
+  .forensic-mark {
+    max-width:190px;
+    font-size:5.6px;
+  }
+}
