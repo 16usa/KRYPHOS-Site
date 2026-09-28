@@ -1,6 +1,44 @@
 (() => {
   'use strict';
 
+
+  /* ---------------------------------------------------------
+     MONOLITHIC UI HARDENING
+     Stops normal selection/copy/context-menu/image dragging
+     and common browser save/view-source shortcuts.
+     This is deterrence, not DRM: screenshots/devtools/network
+     access cannot be made impossible in a normal website.
+  --------------------------------------------------------- */
+  const blockEvent = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+  };
+
+  ['contextmenu', 'copy', 'cut', 'dragstart', 'selectstart'].forEach((name) => {
+    document.addEventListener(name, blockEvent, true);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const key = String(event.key || '').toLowerCase();
+    const mod = event.metaKey || event.ctrlKey;
+
+    const blockedCombos = mod && ['c', 'x', 's', 'u', 'p', 'a'].includes(key);
+    const blockedDevtools =
+      key === 'f12' ||
+      (mod && event.shiftKey && ['i', 'j', 'c'].includes(key));
+
+    if (blockedCombos || blockedDevtools) {
+      blockEvent(event);
+    }
+  }, true);
+
+  document.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('draggable', 'false');
+    img.setAttribute('aria-hidden', img.getAttribute('alt') ? 'false' : 'true');
+  });
+
+
   const cfg = window.KRYPHOS_CONFIG || {};
   const burnSchedule = [
     ['$100K', 100000000, 100000000, 900000000],

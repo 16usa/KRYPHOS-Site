@@ -21,6 +21,60 @@ body {
 }
 img { display:block; max-width:100%; }
 
+
+/* MONOLITHIC / NO-COPY UI HARDENING */
+html,
+body,
+body *,
+body *::before,
+body *::after {
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none !important;
+}
+
+img,
+svg,
+canvas,
+video {
+  -webkit-user-drag:none !important;
+  user-drag:none !important;
+  -webkit-touch-callout:none !important;
+  user-select:none !important;
+}
+
+img {
+  pointer-events:none !important;
+}
+
+a,
+button,
+[role="button"] {
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Hide content when someone tries to print/save as PDF from the browser. */
+@media print {
+  html, body {
+    background:#000 !important;
+  }
+  body > * {
+    display:none !important;
+  }
+  body::before {
+    content:'KRYPHOS';
+    display:grid !important;
+    position:fixed;
+    inset:0;
+    place-items:center;
+    background:#000;
+    color:#fff;
+    font:600 28px/1 Arial,sans-serif;
+    letter-spacing:.35em;
+  }
+}
+
+
 /* FULLSCREEN DECK */
 .deck { position:fixed; inset:0; overflow:hidden; background:var(--black); }
 
