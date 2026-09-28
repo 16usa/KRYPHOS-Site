@@ -21,93 +21,9 @@ body {
 }
 img { display:block; max-width:100%; }
 
-/* GLOBAL CINEMATIC INTERFERENCE — fixed above every slide */
-body::before,
-body::after {
-  content:'';
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:9999;
-}
-
-body::before {
-  opacity:.28;
-  mix-blend-mode:screen;
-  background-image:
-    repeating-radial-gradient(circle at 0 0,
-      rgba(255,255,255,.16) 0 1px,
-      rgba(0,0,0,.08) 1px 2px,
-      transparent 2px 4px),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,.025) 0 1px,
-      rgba(0,0,0,.025) 1px 2px,
-      transparent 2px 4px
-    );
-  background-size:5px 5px, 7px 100%;
-  animation:kryphosNoise 180ms steps(2,end) infinite;
-}
-
-body::after {
-  opacity:.30;
-  mix-blend-mode:overlay;
-  background:
-    linear-gradient(to bottom,
-      transparent 0%,
-      transparent 46%,
-      rgba(255,255,255,.13) 49%,
-      rgba(255,255,255,.035) 50%,
-      rgba(0,0,0,.11) 51%,
-      transparent 54%,
-      transparent 100%),
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,.045) 0,
-      rgba(255,255,255,.045) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-  background-size:100% 16vh, 100% 4px;
-  animation:kryphosScan 3.4s linear infinite, kryphosFlicker 2.7s steps(1,end) infinite;
-}
-
 /* FULLSCREEN DECK */
 .deck { position:fixed; inset:0; overflow:hidden; background:var(--black); }
 
-.deck::before,
-.deck::after {
-  content:'';
-  position:absolute;
-  inset:-12%;
-  pointer-events:none;
-  z-index:12;
-}
-.deck::before {
-  opacity:.05;
-  mix-blend-mode:soft-light;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,.22) 0 1px, transparent 1.4px),
-    radial-gradient(circle at 80% 30%, rgba(255,255,255,.18) 0 1px, transparent 1.3px),
-    radial-gradient(circle at 40% 80%, rgba(255,255,255,.16) 0 1px, transparent 1.2px),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,.14) 0 1px, transparent 1.2px);
-  background-size: 180px 180px, 220px 220px, 160px 160px, 240px 240px;
-  animation:grainShift 7.5s steps(10) infinite;
-}
-.deck::after {
-  inset:0;
-  opacity:.06;
-  mix-blend-mode:overlay;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,.028) 0px,
-      rgba(255,255,255,.028) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-  animation:flickerNoise 5.2s steps(1) infinite;
-}
 .slide {
   position:absolute;
   inset:0;
@@ -267,6 +183,137 @@ body::after {
 .final-number { font-size:clamp(70px,15vw,200px); line-height:.9; letter-spacing:-.06em; margin:28px 0 25px; white-space:nowrap; }
 .final-number span { display:inline-block; font-size:.45em; transform:translateY(-.15em); margin:0 .06em; }
 .finale p { margin:0; font-family:Arial,Helvetica,sans-serif; text-transform:uppercase; letter-spacing:.24em; font-size:10px; color:#bdbdbd; }
+
+
+/* GUARANTEED INTERFERENCE FX — explicit DOM layers for iPhone Safari */
+.signal-fx {
+  position:fixed;
+  inset:0;
+  z-index:2147483000;
+  pointer-events:none;
+  overflow:hidden;
+  contain:strict;
+}
+
+.signal-noise,
+.signal-scan,
+.signal-glitch {
+  position:absolute;
+  pointer-events:none;
+}
+
+.signal-noise {
+  inset:-14%;
+  background-image:url('assets/kryphos-noise.png');
+  background-repeat:repeat;
+  background-size:96px 96px;
+  opacity:.62;
+  animation:signalNoiseMove .16s steps(2,end) infinite;
+  will-change:transform,background-position;
+}
+
+.signal-scan {
+  inset:0;
+  opacity:.34;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 47%,
+      rgba(255,255,255,.15) 49%,
+      rgba(127,127,127,.16) 50%,
+      rgba(0,0,0,.15) 51%,
+      transparent 53%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.045) 0,
+      rgba(255,255,255,.045) 1px,
+      rgba(0,0,0,.035) 1px,
+      rgba(0,0,0,.035) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  background-size:100% 18vh,100% 4px;
+  animation:signalScanMove 3.1s linear infinite, signalScanFlicker 2.3s steps(1,end) infinite;
+}
+
+.signal-glitch {
+  left:-4%;
+  width:108%;
+  height:5vh;
+  min-height:18px;
+  opacity:0;
+  border-top:1px solid rgba(255,255,255,.30);
+  border-bottom:1px solid rgba(0,0,0,.30);
+  background:rgba(127,127,127,.10);
+  box-shadow:
+    0 0 18px rgba(255,255,255,.06),
+    inset 0 1px rgba(255,255,255,.12),
+    inset 0 -1px rgba(0,0,0,.12);
+  transform:translate3d(0,0,0);
+  will-change:top,transform,opacity,height;
+}
+
+.signal-glitch.g1 { animation:signalGlitchOne 5.4s steps(1,end) infinite; }
+.signal-glitch.g2 { animation:signalGlitchTwo 7.1s steps(1,end) infinite; }
+
+@keyframes signalNoiseMove {
+  0%   { transform:translate3d(0,0,0) scale(1.02); background-position:0 0; }
+  25%  { transform:translate3d(-1.4%,.8%,0) scale(1.025); background-position:13px -7px; }
+  50%  { transform:translate3d(.9%,-1.1%,0) scale(1.02); background-position:-11px 9px; }
+  75%  { transform:translate3d(-.6%,1.2%,0) scale(1.025); background-position:7px 14px; }
+  100% { transform:translate3d(0,0,0) scale(1.02); background-position:0 0; }
+}
+
+@keyframes signalScanMove {
+  from { background-position:0 -20vh,0 0; }
+  to   { background-position:0 120vh,0 0; }
+}
+
+@keyframes signalScanFlicker {
+  0%,100% { opacity:.31; }
+  9% { opacity:.43; }
+  10% { opacity:.20; }
+  34% { opacity:.35; }
+  35% { opacity:.24; }
+  63% { opacity:.41; }
+  64% { opacity:.26; }
+  86% { opacity:.37; }
+}
+
+@keyframes signalGlitchOne {
+  0%,7%,100% { opacity:0; top:16%; transform:translateX(0); height:4vh; }
+  8% { opacity:.58; top:16%; transform:translateX(-2.2%); height:4vh; }
+  9% { opacity:.18; top:17%; transform:translateX(1.4%); height:2vh; }
+  10% { opacity:0; }
+  42% { opacity:.46; top:58%; transform:translateX(2.5%); height:6vh; }
+  43% { opacity:.22; top:60%; transform:translateX(-1.3%); height:2vh; }
+  44% { opacity:0; }
+  76% { opacity:.52; top:34%; transform:translateX(-1.8%); height:3vh; }
+  77% { opacity:0; }
+}
+
+@keyframes signalGlitchTwo {
+  0%,18%,100% { opacity:0; top:72%; transform:translateX(0); height:3vh; }
+  19% { opacity:.34; top:72%; transform:translateX(1.6%); height:3vh; }
+  20% { opacity:0; }
+  54% { opacity:.42; top:24%; transform:translateX(-2.6%); height:7vh; }
+  55% { opacity:.16; top:25%; transform:translateX(1.2%); height:2vh; }
+  56% { opacity:0; }
+  88% { opacity:.38; top:82%; transform:translateX(2%); height:4vh; }
+  89% { opacity:0; }
+}
+
+/* Keep the requested interference visible even when iOS Reduce Motion is enabled;
+   the motion is slowed rather than removing the effect entirely. */
+@media (prefers-reduced-motion:reduce) {
+  .signal-noise { animation-duration:.8s; }
+  .signal-scan { animation-duration:8s,6s; }
+  .signal-glitch.g1 { animation-duration:11s; }
+  .signal-glitch.g2 { animation-duration:14s; }
+}
 
 /* SLIDE UI */
 .deck-ui {
@@ -441,6 +488,6 @@ body::after {
 
 @media (prefers-reduced-motion:reduce) {
   .slide { transition:opacity .25s ease; filter:none!important; transform:none!important; }
-  body::before,body::after,.deck::before,.deck::after,.scene,.door-glow,.light-column,.scroll-mark span,.swipe-hint span,.reveal { transition:none; animation:none; }
+  .scene,.door-glow,.light-column,.scroll-mark span,.swipe-hint span,.reveal { transition:none; animation:none; }
   .reveal { opacity:1; transform:none; filter:none; }
 }
