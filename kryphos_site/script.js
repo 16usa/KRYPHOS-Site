@@ -50,7 +50,7 @@
   const forensicTopLeft = document.getElementById('forensicTopLeft');
   const forensicBottomRight = document.getElementById('forensicBottomRight');
 
-  const FORENSIC_MINT = 'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn';
+  const FORENSIC_MINT = 'MINT ADDRESS';
   const COUNTDOWN_TARGET = new Date('2026-12-28T23:20:10Z').getTime();
 
   function formatCountdown(ms) {
