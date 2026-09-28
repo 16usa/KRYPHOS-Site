@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main>
-    <section class="hero" aria-label="KRYPHOS">
+  <main id="deck" class="deck" aria-live="polite">
+    <section class="hero slide active" data-slide="0" aria-label="KRYPHOS">
       <div class="scene" id="scene" aria-hidden="true">
         <img class="scene-image" src="assets/kryphos-hero.jpeg" alt="" draggable="false" />
         <div class="door-glow"></div>
@@ -23,7 +23,7 @@
       <div class="scroll-mark" aria-hidden="true"><span></span></div>
     </section>
 
-    <section class="paper protocol" id="protocol">
+    <section class="paper protocol slide" data-slide="1" id="protocol">
       <div class="wrap intro-grid">
         <div class="intro-copy reveal">
           <div class="eyebrow">THE PROTOCOL</div>
@@ -44,7 +44,7 @@
       </div>
     </section>
 
-    <section class="paper mechanics">
+    <section class="paper mechanics slide" data-slide="2">
       <div class="wrap">
         <div class="section-kicker reveal">MECHANICS</div>
         <h2 class="section-title reveal">How It Works</h2>
@@ -73,7 +73,7 @@
       </div>
     </section>
 
-    <section class="paper schedule-section">
+    <section class="paper schedule-section slide" data-slide="3">
       <div class="wrap">
         <div class="section-kicker reveal">PUBLISHED SCHEDULE</div>
         <h2 class="section-title reveal">Burn Schedule</h2>
@@ -93,7 +93,7 @@
       </div>
     </section>
 
-    <section class="paper verification">
+    <section class="paper verification slide" data-slide="4">
       <div class="wrap verification-grid">
         <div class="verify-copy reveal">
           <div class="section-kicker">VERIFICATION</div>
@@ -116,7 +116,7 @@
       </div>
     </section>
 
-    <section class="finale">
+    <section class="finale slide" data-slide="5">
       <div class="finale-inner reveal">
         <div class="section-kicker">FINAL SUPPLY</div>
         <div class="final-number">1B <span>→</span> 300M</div>
@@ -124,6 +124,12 @@
       </div>
     </section>
   </main>
+
+  <div class="deck-ui" aria-hidden="true">
+    <div class="deck-counter"><span id="deckCurrent">01</span><i></i><span id="deckTotal">06</span></div>
+    <div class="deck-dots" id="deckDots"></div>
+  </div>
+  <div class="swipe-hint" id="swipeHint" aria-hidden="true">SWIPE UP <span>↑</span></div>
 
   <script src="config.js"></script>
   <script src="script.js"></script>
