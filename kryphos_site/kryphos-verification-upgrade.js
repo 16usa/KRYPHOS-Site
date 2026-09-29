@@ -1,7 +1,7 @@
 (() => {
   "use strict";
-  if (window.__KRYPHOS_VERIFICATION_V3__) return;
-  window.__KRYPHOS_VERIFICATION_V3__ = true;
+  if (window.__KRYPHOS_VERIFICATION_V4__) return;
+  window.__KRYPHOS_VERIFICATION_V4__ = true;
 
   const CFG = {
     programId: "AiAyabtePcmbsA8VSsq4JCvR2qdotL4szqbNggHYvjwS",
@@ -13,31 +13,153 @@
     instructions: ["initialize_vault", "bind_canonical_pool", "burn_next"]
   };
 
+  let checked = false;
+  let onChain = false;
+
   const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
 
-  function leaf(text) {
-    const wanted = norm(text);
-    for (const el of document.querySelectorAll("body *:not(script):not(style):not(svg):not(path)")) {
-      if (el.children.length === 0 && norm(el.textContent) === wanted) return el;
+  function allTextNodes(root=document.body) {
+    const out = [];
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const p = node.parentElement;
+        if (!p || ["SCRIPT","STYLE","NOSCRIPT"].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+        return norm(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    while (w.nextNode()) out.push(w.currentNode);
+    return out;
+  }
+
+  function findTextNodeContains(text) {
+    const want = text.toLowerCase();
+    return allTextNodes().find(n => norm(n.nodeValue).toLowerCase().includes(want)) || null;
+  }
+
+  function replaceTextEverywhere(from, to) {
+    for (const n of allTextNodes()) {
+      if (n.nodeValue.includes(from)) n.nodeValue = n.nodeValue.replaceAll(from, to);
+    }
+  }
+
+  function smallestContainerForText(text, extraChecks=[], maxChars=600) {
+    const n = findTextNodeContains(text);
+    if (!n) return null;
+    let el = n.parentElement;
+    let best = el;
+    for (let i=0; i<8 && el; i++, el=el.parentElement) {
+      const t = norm(el.textContent);
+      if (t.length <= maxChars && extraChecks.every(x => t.includes(x))) best = el;
+    }
+    return best;
+  }
+
+  function textNodeInside(el, exact) {
+    if (!el) return null;
+    const wanted = norm(exact);
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) {
+      const n = w.currentNode;
+      if (norm(n.nodeValue) === wanted) return n;
     }
     return null;
   }
 
-  function ancestor(el, checks, maxLen=500) {
-    let cur = el;
-    for (let i=0; i<8 && cur; i++, cur=cur.parentElement) {
-      const t = norm(cur.textContent);
-      if (t.length <= maxLen && checks.every(x => t.includes(x))) return cur;
+  function replaceFirstTextInside(el, from, to) {
+    if (!el) return false;
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) {
+      const n = w.currentNode;
+      if (norm(n.nodeValue) === from) {
+        n.nodeValue = n.nodeValue.replace(from, to);
+        return true;
+      }
     }
-    return el?.parentElement || null;
+    return false;
   }
 
-  function copy(text, btn) {
+  async function checkProgram() {
+    if (checked) return;
+    checked = true;
+    try {
+      const r = await fetch(CFG.rpc, {
+        method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({
+          jsonrpc:"2.0",
+          id:1,
+          method:"getAccountInfo",
+          params:[CFG.programId,{encoding:"base64",commitment:"confirmed"}]
+        })
+      });
+      const j = await r.json();
+      onChain = !!j?.result?.value;
+    } catch {
+      onChain = false;
+    }
+  }
+
+  function patchStaticLabels() {
+    replaceTextEverywhere(
+      "AWAITING ON-CHAIN ADDRESSES",
+      onChain ? "ON-CHAIN PROGRAM VERIFIED" : "CODE READY · MAINNET DEPLOYMENT PENDING"
+    );
+    replaceTextEverywhere("TOTAL SUPPLY", "PLANNED SUPPLY");
+    replaceTextEverywhere("VAULT BALANCE", "PLANNED VAULT");
+  }
+
+  function patchProgramCard() {
+    const box = smallestContainerForText("PROGRAM", ["Not configured","OPEN"], 420);
+    if (!box) return;
+
+    const notConfigured = textNodeInside(box, "Not configured");
+    if (notConfigured) {
+      const span = document.createElement("span");
+      span.className = "kv-program-address";
+      span.textContent = CFG.programId;
+      span.title = CFG.programId;
+      notConfigured.parentNode.replaceChild(span, notConfigured);
+    }
+
+    const open = textNodeInside(box, "OPEN");
+    if (open) {
+      const btn = document.createElement("button");
+      btn.className = "kv-inline-action";
+      btn.type = "button";
+      btn.textContent = onChain ? "VERIFY" : "COPY";
+      btn.onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onChain) {
+          window.open(CFG.explorer + CFG.programId, "_blank", "noopener,noreferrer");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(CFG.programId);
+          const old = btn.textContent;
+          btn.textContent = "COPIED";
+          setTimeout(() => btn.textContent = old, 1000);
+        } catch {}
+      };
+      open.parentNode.replaceChild(btn, open);
+    }
+  }
+
+  function patchAuthority() {
+    const row = smallestContainerForText("Upgrade authority", ["Waiting"], 700);
+    if (!row) return;
+    replaceFirstTextInside(
+      row,
+      "Waiting for Program ID",
+      "Dedicated deployer configured · on-chain authority pending"
+    );
+  }
+
+  function copy(text, button) {
     navigator.clipboard?.writeText(text).then(() => {
-      if (!btn) return;
-      const old = btn.textContent;
-      btn.textContent = "COPIED";
-      setTimeout(() => btn.textContent = old, 1100);
+      const old = button.textContent;
+      button.textContent = "COPIED";
+      setTimeout(() => button.textContent = old, 1000);
     }).catch(()=>{});
   }
 
@@ -47,21 +169,21 @@
 
     const left = document.createElement("div");
     left.className = "kv-left";
-    const l = document.createElement("div");
-    l.className = "kv-label";
-    l.textContent = label;
-    const v = document.createElement("div");
-    v.className = "kv-value";
-    v.textContent = value;
-    v.title = value;
-    left.append(l, v);
+    const key = document.createElement("div");
+    key.className = "kv-label";
+    key.textContent = label;
+    const val = document.createElement("div");
+    val.className = "kv-value";
+    val.textContent = value;
+    val.title = value;
+    left.append(key, val);
 
     const right = document.createElement("div");
     right.className = "kv-right";
-    const s = document.createElement("div");
-    s.className = "kv-status";
-    s.textContent = status;
-    right.appendChild(s);
+    const badge = document.createElement("div");
+    badge.className = "kv-status";
+    badge.textContent = status;
+    right.appendChild(badge);
 
     if (action) {
       const b = document.createElement("button");
@@ -76,90 +198,35 @@
     return row;
   }
 
-  let checked = false;
-  let onChain = false;
+  function findVerificationListContainer() {
+    const row5 = smallestContainerForText("Permissionless burn execution", ["Published burn design"], 900);
+    if (!row5) return null;
 
-  async function checkProgram() {
-    if (checked) return;
-    checked = true;
-    try {
-      const r = await fetch(CFG.rpc, {
-        method: "POST",
-        headers: {"content-type":"application/json"},
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "getAccountInfo",
-          params: [CFG.programId, {encoding:"base64", commitment:"confirmed"}]
-        })
-      });
-      const j = await r.json();
-      onChain = !!j?.result?.value;
-    } catch {
-      onChain = false;
-    }
-  }
-
-  function patchHeader() {
-    const current =
-      leaf("AWAITING ON-CHAIN ADDRESSES") ||
-      leaf("CODE READY · MAINNET DEPLOYMENT PENDING") ||
-      leaf("ON-CHAIN PROGRAM VERIFIED");
-    if (current) {
-      current.textContent = onChain
-        ? "ON-CHAIN PROGRAM VERIFIED"
-        : "CODE READY · MAINNET DEPLOYMENT PENDING";
-    }
-  }
-
-  function patchProgram() {
-    const p = leaf("PROGRAM");
-    if (!p) return;
-    const box = ancestor(p, ["PROGRAM"], 300);
-    if (!box) return;
-
-    for (const el of box.querySelectorAll("*")) {
-      if (el.children.length) continue;
+    // Climb until the container includes several verification rows, but not the whole page.
+    let el = row5;
+    let candidate = row5;
+    for (let i=0; i<7 && el; i++, el=el.parentElement) {
       const t = norm(el.textContent);
-      if (t === "Not configured") {
-        el.textContent = CFG.programId;
-        el.title = CFG.programId;
-        el.classList.add("kv-program-address");
-      }
-      if (t === "OPEN") {
-        el.textContent = onChain ? "VERIFY" : "COPY";
-        el.classList.add("kv-inline-action");
-        el.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onChain) {
-            window.open(CFG.explorer + CFG.programId, "_blank", "noopener,noreferrer");
-          } else {
-            copy(CFG.programId, el);
-          }
-        };
+      if (
+        t.includes("Burn Vault address is public") &&
+        t.includes("Every completed burn is visible on-chain") &&
+        t.includes("Permissionless burn execution") &&
+        t.length < 5000
+      ) {
+        candidate = el;
+        break;
       }
     }
+    return candidate;
   }
 
-  function patchAuthority() {
-    const t = leaf("Upgrade authority");
-    if (!t) return;
-    const row = ancestor(t, ["Upgrade authority"], 500);
-    if (!row) return;
-    for (const el of row.querySelectorAll("*")) {
-      if (!el.children.length && norm(el.textContent) === "Waiting for Program ID") {
-        el.textContent = "Dedicated deployer configured · on-chain authority pending";
-      }
-    }
-  }
+  function buildProofPanel() {
+    // Remove prior v3/v4 panel if it was injected in the wrong place.
+    const old = document.getElementById("kryphos-public-proof");
+    if (old) old.remove();
 
-  function buildProof() {
-    if (document.getElementById("kryphos-public-proof")) return;
-
-    const anchor = leaf("Permissionless burn execution");
-    if (!anchor) return;
-    const row = ancestor(anchor, ["Permissionless burn execution"], 500) || anchor.parentElement;
+    const listContainer = findVerificationListContainer();
+    if (!listContainer) return;
 
     const panel = document.createElement("section");
     panel.id = "kryphos-public-proof";
@@ -167,14 +234,12 @@
       <div class="kv-kicker">PUBLIC PROOF</div>
       <div class="kv-title">Verify the claims yourself</div>
       <div class="kv-desc">
-        Protocol facts and live Solana proofs are shown separately.
-        Anything not yet available on-chain stays marked WAITING.
+        Protocol facts and live Solana proofs are separated. Anything that does not yet exist on-chain stays marked WAITING.
       </div>
       <div class="kv-list"></div>
       <div class="kv-note">
         ON-CHAIN VERIFIED = resolved from Solana mainnet · PROTOCOL = confirmed by published program design / IDL · WAITING = no live proof exists yet.
-      </div>
-    `;
+      </div>`;
 
     const list = panel.querySelector(".kv-list");
     list.append(
@@ -185,8 +250,8 @@
           : copy(CFG.programId, e.currentTarget)
       }),
       makeRow("PROGRAM BINARY", `${CFG.binaryBytes} bytes · SHA256 ${CFG.binarySha256}`, "PROTOCOL", {
-        label: "COPY HASH",
-        run: (e) => copy(CFG.binarySha256, e.currentTarget)
+        label:"COPY HASH",
+        run:(e)=>copy(CFG.binarySha256,e.currentTarget)
       }),
       makeRow("IDL INSTRUCTIONS", CFG.instructions.join(" · "), "PROTOCOL"),
       makeRow("DEPLOY TRANSACTION", "Waiting for Solana mainnet deployment", "WAITING"),
@@ -194,20 +259,20 @@
       makeRow("MINT", "Not configured", "WAITING"),
       makeRow("LATEST BURN", "Waiting for first completed burn", "WAITING"),
       makeRow("DEPLOYER / FEE PAYER", CFG.deployer, "PREPARED", {
-        label: "COPY",
-        run: (e) => copy(CFG.deployer, e.currentTarget)
+        label:"COPY",
+        run:(e)=>copy(CFG.deployer,e.currentTarget)
       })
     );
 
-    row.insertAdjacentElement("afterend", panel);
+    listContainer.insertAdjacentElement("afterend", panel);
   }
 
   async function apply() {
     await checkProgram();
-    patchHeader();
-    patchProgram();
+    patchStaticLabels();
+    patchProgramCard();
     patchAuthority();
-    buildProof();
+    buildProofPanel();
   }
 
   if (document.readyState === "loading") {
@@ -216,11 +281,8 @@
     apply();
   }
 
-  let t;
-  new MutationObserver(() => {
-    clearTimeout(t);
-    t = setTimeout(apply, 80);
-  }).observe(document.documentElement, {childList:true, subtree:true});
+  // One extra pass for pages that finish rendering after DOMContentLoaded.
+  setTimeout(apply, 600);
 
   window.KRYPHOS_VERIFICATION = {
     refresh: () => { checked = false; return apply(); },
