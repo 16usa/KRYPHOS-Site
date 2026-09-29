@@ -7,10 +7,13 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-kryphos_burn = "11111111111111111111111111111111"
+kryphos_burn = "AiAyabtePcmbsA8VSsq4JCvR2qdotL4szqbNggHYvjwS"
 
 [programs.mainnet]
-kryphos_burn = "11111111111111111111111111111111"
+kryphos_burn = "AiAyabtePcmbsA8VSsq4JCvR2qdotL4szqbNggHYvjwS"
+
+[registry]
+url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"

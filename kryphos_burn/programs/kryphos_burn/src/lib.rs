@@ -3,7 +3,7 @@ use anchor_spl::token_interface::{self, BurnChecked, Mint, TokenAccount, TokenIn
 use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, PriceUpdateV2};
 use std::str::FromStr;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("AiAyabtePcmbsA8VSsq4JCvR2qdotL4szqbNggHYvjwS");
 
 const INITIAL_SUPPLY_TOKENS: u64 = 1_000_000_000;
 const LOCKED_TOKENS: u64 = 700_000_000;
