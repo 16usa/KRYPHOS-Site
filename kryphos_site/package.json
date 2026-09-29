@@ -1,8 +1,8 @@
 {
-  "name": "kryphos-immutable-burn-protocol",
+  "name": "kryphos-adaptive-boost-site",
   "version": "1.0.0",
   "private": true,
-  "description": "KRYPHOS single-page immutable burn protocol site",
+  "description": "KRYPHOS adaptive fee-funded Boost Engine public interface",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"

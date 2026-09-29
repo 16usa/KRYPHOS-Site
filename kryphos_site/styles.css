@@ -843,3 +843,14 @@ button,
     font-size:5.6px;
   }
 }
+
+
+/* ADAPTIVE BOOST ENGINE v1 */
+.schedule tr.current td { font-weight:700; }
+.schedule tr.completed td { opacity:.48; }
+.boost-loop { font-size:clamp(54px,11vw,150px); letter-spacing:-.055em; }
+.verify-live-state.live i { background:#111; animation:verifyBlink 1.15s steps(1,end) infinite; }
+.verify-live-state.error i { background:#111; }
+@media(max-width:580px){
+  .boost-loop{font-size:clamp(45px,15vw,78px);}
+}

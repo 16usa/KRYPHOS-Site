@@ -4,10 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
-  <meta name="description" content="KRYPHOS — immutable burn mechanics, public and verifiable on-chain." />
-  <title>KRYPHOS — Immutable Burn Protocol</title>
+  <meta name="description" content="KRYPHOS — adaptive fee-funded Boost Engine with a transparent 10% marketing reserve." />
+  <title>KRYPHOS — Adaptive Boost Engine</title>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="./kryphos-verification-upgrade.css">
 </head>
 <body>
   <main id="deck" class="deck" aria-live="polite">
@@ -27,20 +26,20 @@
     <section class="paper protocol slide" data-slide="1" id="protocol">
       <div class="wrap intro-grid">
         <div class="intro-copy reveal">
-          <div class="eyebrow">THE PROTOCOL</div>
-          <h2>Immutable<br />Burn Mechanics</h2>
+          <div class="eyebrow">THE ENGINE</div>
+          <h2>Adaptive<br />Boost Mechanics</h2>
           <p>
-            A fixed supply. A transparent burn mechanism. Engineered for permanence.
-            KRYPHOS is built around a published schedule: no discretionary withdrawal
-            from the burn vault, no hidden release path, and every completed burn can
-            be verified on-chain.
+            Trading fees fund visibility first. A dedicated 10% Boost Reserve exists only
+            as a controlled fallback when the fee treasury is short. The engine continuously
+            evaluates liquidity, available fees, reserve impact and active DEX Screener Boosts
+            before selecting the next action.
           </p>
         </div>
-        <div class="core-stats reveal" aria-label="Token supply statistics">
+        <div class="core-stats reveal" aria-label="KRYPHOS boost system statistics">
           <div class="metric"><span>Total supply</span><strong data-stat="initial">1,000,000,000</strong></div>
-          <div class="metric"><span>Locked in Burn Vault (PDA)</span><strong data-stat="vault">700,000,000</strong></div>
-          <div class="metric"><span>Circulating at genesis</span><strong>300,000,000</strong></div>
-          <div class="metric"><span>Final target supply</span><strong>300,000,000</strong></div>
+          <div class="metric"><span>Dedicated Boost Reserve</span><strong data-stat="vault">100,000,000</strong></div>
+          <div class="metric"><span>Reserve share</span><strong>10%</strong></div>
+          <div class="metric"><span>Engine</span><strong>Continuous</strong></div>
         </div>
       </div>
     </section>
@@ -52,23 +51,23 @@
         <div class="steps">
           <article class="step reveal">
             <div class="step-no">01</div>
-            <h3>Mint 1B tokens</h3>
-            <p>A total supply of 1,000,000,000 KRYPHOS is created at genesis.</p>
+            <h3>Trading generates fees</h3>
+            <p>Creator fees accumulate as the token trades. Fees are the engine's primary funding source.</p>
           </article>
           <article class="step reveal">
             <div class="step-no">02</div>
-            <h3>Lock 700M</h3>
-            <p>700,000,000 tokens are transferred into the immutable Burn Vault (PDA).</p>
+            <h3>Fees are used first</h3>
+            <p>The Boost Treasury is always consumed before any KRYPHOS from the reserve is considered.</p>
           </article>
           <article class="step reveal">
             <div class="step-no">03</div>
-            <h3>Reach a milestone</h3>
-            <p>Each published milestone corresponds to one predefined burn amount.</p>
+            <h3>Reserve covers only the gap</h3>
+            <p>If funding is short, the engine calculates only the minimum reserve top-up required for the selected Boost.</p>
           </article>
           <article class="step reveal">
             <div class="step-no">04</div>
-            <h3>Vault reaches zero</h3>
-            <p>After all stages, 700M has been burned and total supply is 300M.</p>
+            <h3>Market guard decides</h3>
+            <p>If the reserve sale would exceed the configured price-impact limit, the engine steps down or waits.</p>
           </article>
         </div>
       </div>
@@ -76,20 +75,20 @@
 
     <section class="paper schedule-section slide" data-slide="3">
       <div class="wrap">
-        <div class="section-kicker reveal">PUBLISHED SCHEDULE</div>
-        <h2 class="section-title reveal">Burn Schedule</h2>
+        <div class="section-kicker reveal">ADAPTIVE FUNDING</div>
+        <h2 class="section-title reveal">Boost Ladder</h2>
         <div class="schedule-wrap reveal">
-          <table class="schedule" aria-label="Burn schedule">
+          <table class="schedule" aria-label="Adaptive Boost ladder">
             <thead>
-              <tr><th>Milestone</th><th>Burn</th><th>Total burned</th><th>Supply after burn</th></tr>
+              <tr><th>Boost</th><th>Fees first</th><th>Reserve top-up</th><th>Decision</th></tr>
             </thead>
             <tbody id="scheduleBody"></tbody>
           </table>
         </div>
         <div class="progress-line reveal">
-          <span id="progressLabel">Protocol schedule</span>
+          <span id="progressLabel">Waiting for live market data</span>
           <div class="track"><i id="progressBar"></i></div>
-          <strong id="progressPct">0%</strong>
+          <strong id="progressPct">—</strong>
         </div>
       </div>
     </section>
@@ -103,11 +102,11 @@
           </div>
           <div class="verify-live-state" id="verifyLiveState">
             <i></i>
-            <span id="verifyLiveText">Awaiting on-chain addresses</span>
+            <span id="verifyLiveText">Awaiting live configuration</span>
           </div>
         </div>
 
-        <div class="verify-chain-strip reveal" aria-label="Live on-chain protocol state">
+        <div class="verify-chain-strip reveal" aria-label="Live boost system state">
           <div class="verify-chain-cell">
             <span>Mint</span>
             <code id="verifyMintAddress">Not configured</code>
@@ -118,16 +117,16 @@
             <strong id="verifyTotalSupply">1,000,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Burn Vault</span>
+            <span>Boost Reserve</span>
             <code id="verifyVaultAddress">Not configured</code>
             <a id="verifyVaultLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
           <div class="verify-chain-cell">
-            <span>Vault balance</span>
-            <strong id="verifyVaultBalance">700,000,000</strong>
+            <span>Reserve balance</span>
+            <strong id="verifyVaultBalance">100,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Program</span>
+            <span>Boost Treasury</span>
             <code id="verifyProgramAddress">Not configured</code>
             <a id="verifyProgramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
@@ -137,8 +136,8 @@
           <div class="verify-proof-row">
             <span>01</span>
             <div>
-              <b>Burn Vault address is public</b>
-              <small id="vaultProofText">Waiting for Burn Vault address</small>
+              <b>Boost Reserve is public</b>
+              <small id="vaultProofText">Waiting for reserve wallet</small>
             </div>
             <em id="vaultProofStatus" class="verify-status waiting">WAITING</em>
           </div>
@@ -146,8 +145,8 @@
           <div class="verify-proof-row">
             <span>02</span>
             <div>
-              <b>Every completed burn is visible on-chain</b>
-              <small id="burnProofText">0 burned · no on-chain proof loaded</small>
+              <b>Creator fees are counted before reserve</b>
+              <small id="burnProofText">Waiting for fee treasury data</small>
               <div class="burn-tx-list" id="burnTxList" hidden></div>
             </div>
             <em id="burnProofStatus" class="verify-status waiting">WAITING</em>
@@ -156,8 +155,8 @@
           <div class="verify-proof-row">
             <span>03</span>
             <div>
-              <b>Upgrade authority</b>
-              <small id="upgradeProofText">Waiting for Program ID</small>
+              <b>DEX Screener Boost state</b>
+              <small id="upgradeProofText">Waiting for token pair</small>
             </div>
             <em id="upgradeProofStatus" class="verify-status waiting">WAITING</em>
           </div>
@@ -165,29 +164,29 @@
           <div class="verify-proof-row">
             <span>04</span>
             <div>
-              <b>No vault withdrawal path</b>
-              <small>Published burn design</small>
+              <b>Reserve sale guard</b>
+              <small id="reserveGuardText">Live quote required before any reserve sale</small>
             </div>
-            <em class="verify-status protocol">PROTOCOL</em>
+            <em id="reserveGuardStatus" class="verify-status protocol">GUARDED</em>
           </div>
 
           <div class="verify-proof-row">
             <span>05</span>
             <div>
-              <b>Permissionless burn execution</b>
-              <small>Published burn design</small>
+              <b>Adaptive Boost selection</b>
+              <small id="boostDecisionText">10 / 30 / 50 / 100 / 500 · highest safe affordable pack</small>
             </div>
-            <em class="verify-status protocol">PROTOCOL</em>
+            <em id="boostDecisionStatus" class="verify-status protocol">ENGINE</em>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="finale slide data-slide="5">
+    <section class="finale slide" data-slide="5">
       <div class="finale-inner reveal">
-        <div class="section-kicker">FINAL SUPPLY</div>
-        <div class="final-number">1B <span>→</span> 300M</div>
-        <p>700M permanently allocated to the published burn schedule.</p>
+        <div class="section-kicker">ADAPTIVE LOOP</div>
+        <div class="final-number boost-loop">FEES <span>→</span> BOOST</div>
+        <p>Fees first. Reserve only for the shortfall. Liquidity guard before every reserve sale.</p>
       </div>
     </section>
   </main>
@@ -215,6 +214,5 @@
 
   <script src="config.js"></script>
   <script src="script.js"></script>
-  <script src="./kryphos-verification-upgrade.js" defer></script>
 </body>
 </html>

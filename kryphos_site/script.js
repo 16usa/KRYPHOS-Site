@@ -87,54 +87,79 @@
 
 
   const cfg = window.KRYPHOS_CONFIG || {};
-  const burnSchedule = [
-    ['$100K', 100000000, 100000000, 900000000],
-    ['$200K',  95000000, 195000000, 805000000],
-    ['$300K',  90000000, 285000000, 715000000],
-    ['$400K',  80000000, 365000000, 635000000],
-    ['$500K',  75000000, 440000000, 560000000],
-    ['$600K',  70000000, 510000000, 490000000],
-    ['$700K',  60000000, 570000000, 430000000],
-    ['$800K',  50000000, 620000000, 380000000],
-    ['$900K',  40000000, 660000000, 340000000],
-    ['$1M',    40000000, 700000000, 300000000]
+  const fmt = n => new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
+    .format(Math.max(0, Number(n) || 0));
+
+  const boostPacks = [
+    { boosts: 10, label: '10' },
+    { boosts: 30, label: '30' },
+    { boosts: 50, label: '50' },
+    { boosts: 100, label: '100' },
+    { boosts: 500, label: '500' }
   ];
 
-  const fmt = n => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
-    .format(Math.max(0, Math.round(Number(n) || 0)));
-
   const scheduleBody = document.getElementById('scheduleBody');
-  let liveSupply = Number(cfg.initialSupply || 1000000000);
+  let publicBoostState = null;
 
-  function renderSchedule() {
-    const burned = Math.max(0, Number(cfg.initialSupply || 1000000000) - liveSupply);
+  function renderSchedule(state = publicBoostState) {
+    if (!scheduleBody) return;
     scheduleBody.innerHTML = '';
-    let currentSet = false;
 
-    burnSchedule.forEach(row => {
+    const planned = state?.plan?.packBoosts || 0;
+    const active = Number(state?.market?.activeBoosts || 0);
+
+    boostPacks.forEach(pack => {
       const tr = document.createElement('tr');
-      if (burned >= row[2]) tr.classList.add('completed');
-      else if (!currentSet) {
-        tr.classList.add('current');
-        currentSet = true;
-      }
-      tr.innerHTML = `<td>${row[0]}</td><td>${fmt(row[1])}</td><td>${fmt(row[2])}</td><td>${fmt(row[3])}</td>`;
+      if (active >= pack.boosts) tr.classList.add('completed');
+      if (planned === pack.boosts) tr.classList.add('current');
+
+      const cost = state?.pricing?.packs?.find?.(p => Number(p.boosts) === pack.boosts)?.usd;
+      const shortfall = planned === pack.boosts ? Number(state?.plan?.reserveTopUpUsd || 0) : null;
+      const decision = active >= pack.boosts
+        ? 'ACTIVE'
+        : planned === pack.boosts
+          ? String(state?.plan?.action || 'READY').replaceAll('_', ' ')
+          : 'AVAILABLE';
+
+      tr.innerHTML = `
+        <td>${pack.label}</td>
+        <td>${cost ? '$' + fmt(cost) : 'LIVE PRICE'}</td>
+        <td>${shortfall == null ? 'ONLY IF NEEDED' : shortfall > 0 ? '$' + fmt(shortfall) : 'NONE'}</td>
+        <td>${decision}</td>`;
       scheduleBody.appendChild(tr);
     });
 
-    const pct = Math.min(100, Math.max(0, burned / Number(cfg.lockedForBurn || 700000000) * 100));
-    document.getElementById('progressBar').style.width = `${pct}%`;
-    document.getElementById('progressPct').textContent = `${pct.toFixed(pct > 0 && pct < 10 ? 1 : 0)}%`;
-    document.getElementById('progressLabel').textContent = burned > 0 ? `${fmt(burned)} burned` : 'Protocol schedule';
+    const bar = document.getElementById('progressBar');
+    const pctEl = document.getElementById('progressPct');
+    const label = document.getElementById('progressLabel');
+
+    if (!state?.configured) {
+      if (bar) bar.style.width = '0%';
+      if (pctEl) pctEl.textContent = '—';
+      if (label) label.textContent = 'Waiting for live configuration';
+      return;
+    }
+
+    const target = Number(state?.plan?.packCostUsd || 0);
+    const fees = Number(state?.funding?.feesFirstUsd || 0);
+    const pct = target > 0 ? Math.min(100, Math.max(0, fees / target * 100)) : 0;
+    if (bar) bar.style.width = `${pct}%`;
+    if (pctEl) pctEl.textContent = target > 0 ? `${pct.toFixed(0)}%` : '—';
+    if (label) label.textContent = state?.plan?.action
+      ? String(state.plan.action).replaceAll('_', ' ')
+      : 'Evaluating';
   }
 
-  function setStats(vaultBalance) {
+  function setStats(reserveBalance) {
     const initialEl = document.querySelector('[data-stat="initial"]');
     const vaultEl = document.querySelector('[data-stat="vault"]');
-    if (initialEl) initialEl.textContent = fmt(liveSupply);
-    if (vaultEl && Number.isFinite(vaultBalance)) vaultEl.textContent = fmt(vaultBalance);
+    if (initialEl) initialEl.textContent = fmt(cfg.totalSupply || 1000000000);
+    if (vaultEl) vaultEl.textContent = fmt(
+      Number.isFinite(reserveBalance) ? reserveBalance : (cfg.boostReserveTokens || 100000000)
+    );
   }
 
+  setStats();
   renderSchedule();
 
   /* ---------------------------------------------------------
@@ -415,11 +440,9 @@
   window.addEventListener('resize', resetFx, { passive: true });
 
   /* ---------------------------------------------------------
-     LIVE ON-CHAIN VERIFICATION
-     Uses only the already-published KRYPHOS mechanics:
-     Mint, total supply, Burn Vault, completed burns,
-     Program, upgrade authority, no-withdraw design,
-     permissionless burn design.
+     ADAPTIVE BOOST ENGINE — PUBLIC READ-ONLY UI
+     The executable engine lives in /kryphos_boost.
+     This browser code never signs or sends transactions.
   --------------------------------------------------------- */
   const SOLSCAN = 'https://solscan.io';
   const verifyLiveState = document.getElementById('verifyLiveState');
@@ -436,20 +459,26 @@
   const vaultProofStatus = document.getElementById('vaultProofStatus');
   const burnProofText = document.getElementById('burnProofText');
   const burnProofStatus = document.getElementById('burnProofStatus');
-  const burnTxList = document.getElementById('burnTxList');
   const upgradeProofText = document.getElementById('upgradeProofText');
   const upgradeProofStatus = document.getElementById('upgradeProofStatus');
-
-  let mintDecimals = 0;
+  const reserveGuardText = document.getElementById('reserveGuardText');
+  const reserveGuardStatus = document.getElementById('reserveGuardStatus');
+  const boostDecisionText = document.getElementById('boostDecisionText');
+  const boostDecisionStatus = document.getElementById('boostDecisionStatus');
 
   function shortAddress(value, head = 6, tail = 6) {
     if (!value || value.length <= head + tail + 3) return value || 'Not configured';
     return `${value.slice(0, head)}…${value.slice(-tail)}`;
   }
 
-  function setExplorerLink(el, path) {
-    if (!el || !path) return;
-    el.href = `${SOLSCAN}${path}`;
+  function setLink(el, href) {
+    if (!el) return;
+    if (!href) {
+      el.hidden = true;
+      el.removeAttribute('href');
+      return;
+    }
+    el.href = href;
     el.hidden = false;
   }
 
@@ -464,308 +493,101 @@
     if (verifyLiveState) verifyLiveState.className = `verify-live-state ${state}`;
   }
 
-  async function rpc(method, params) {
-    const r = await fetch(cfg.rpcUrl, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({jsonrpc:'2.0', id:1, method, params})
-    });
-    if (!r.ok) throw new Error(`RPC ${r.status}`);
-    const data = await r.json();
-    if (data.error) throw new Error(data.error.message || 'RPC error');
-    return data.result;
-  }
+  function applyBoostState(state) {
+    publicBoostState = state || null;
+    renderSchedule(state);
 
-  function decodeBase64(data) {
-    const raw = atob(data || '');
-    return Uint8Array.from(raw, ch => ch.charCodeAt(0));
-  }
+    const mint = state?.addresses?.mint || cfg.mintAddress || '';
+    const reserve = state?.addresses?.reserveWallet || cfg.boostReserveWallet || '';
+    const treasury = state?.addresses?.boostTreasuryWallet || cfg.boostTreasuryWallet || '';
 
-  function encodeBase58(bytes) {
-    const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    if (!bytes || !bytes.length) return '';
-    const digits = [0];
+    if (verifyMintAddress) verifyMintAddress.textContent = mint ? shortAddress(mint) : 'Not configured';
+    if (verifyVaultAddress) verifyVaultAddress.textContent = reserve ? shortAddress(reserve) : 'Not configured';
+    if (verifyProgramAddress) verifyProgramAddress.textContent = treasury ? shortAddress(treasury) : 'Not configured';
+    if (verifyTotalSupply) verifyTotalSupply.textContent = fmt(cfg.totalSupply || 1000000000);
 
-    for (const byte of bytes) {
-      let carry = byte;
-      for (let i = 0; i < digits.length; i++) {
-        const x = digits[i] * 256 + carry;
-        digits[i] = x % 58;
-        carry = Math.floor(x / 58);
-      }
-      while (carry > 0) {
-        digits.push(carry % 58);
-        carry = Math.floor(carry / 58);
-      }
-    }
+    setLink(verifyMintLink, mint ? `${SOLSCAN}/token/${mint}` : '');
+    setLink(verifyVaultLink, reserve ? `${SOLSCAN}/account/${reserve}` : '');
+    setLink(verifyProgramLink, treasury ? `${SOLSCAN}/account/${treasury}` : '');
 
-    let leading = 0;
-    while (leading < bytes.length && bytes[leading] === 0) leading++;
+    const reserveBalance = Number(state?.funding?.reserveTokenBalance);
+    if (verifyVaultBalance) verifyVaultBalance.textContent = Number.isFinite(reserveBalance)
+      ? fmt(reserveBalance)
+      : fmt(cfg.boostReserveTokens || 100000000);
+    setStats(reserveBalance);
 
-    let result = '1'.repeat(leading);
-    for (let i = digits.length - 1; i >= 0; i--) result += alphabet[digits[i]];
-    return result;
-  }
-
-  function u32le(bytes, offset = 0) {
-    return (
-      bytes[offset] |
-      (bytes[offset + 1] << 8) |
-      (bytes[offset + 2] << 16) |
-      (bytes[offset + 3] << 24)
-    ) >>> 0;
-  }
-
-  async function readUpgradeAuthority(programId) {
-    const program = await rpc('getAccountInfo', [
-      programId,
-      { encoding:'base64', commitment:'confirmed' }
-    ]);
-
-    if (!program?.value) {
-      return { state:'missing', text:'Program account not found' };
-    }
-
-    if (!program.value.executable) {
-      return { state:'alert', text:'Program account is not executable' };
-    }
-
-    const programBytes = decodeBase64(program.value.data?.[0] || '');
-    if (programBytes.length < 36 || u32le(programBytes, 0) !== 2) {
-      return { state:'unknown', text:'Executable program · authority format unavailable' };
-    }
-
-    const programDataAddress = encodeBase58(programBytes.slice(4, 36));
-    const programData = await rpc('getAccountInfo', [
-      programDataAddress,
-      { encoding:'base64', commitment:'confirmed' }
-    ]);
-
-    if (!programData?.value) {
-      return { state:'unknown', text:'ProgramData account unavailable' };
-    }
-
-    const bytes = decodeBase64(programData.value.data?.[0] || '');
-    if (bytes.length < 13 || u32le(bytes, 0) !== 3) {
-      return { state:'unknown', text:'ProgramData authority format unavailable' };
-    }
-
-    const option = bytes[12];
-    if (option === 0) {
-      return { state:'immutable', text:'NONE · program is immutable' };
-    }
-
-    if (option === 1 && bytes.length >= 45) {
-      const authority = encodeBase58(bytes.slice(13, 45));
-      return { state:'authority', text:`${shortAddress(authority)} · upgrade authority present`, authority };
-    }
-
-    return { state:'unknown', text:'Upgrade authority unavailable' };
-  }
-
-  function collectParsedInstructions(tx) {
-    const outer = tx?.transaction?.message?.instructions || [];
-    const inner = (tx?.meta?.innerInstructions || []).flatMap(group => group?.instructions || []);
-    return [...outer, ...inner];
-  }
-
-  function burnAmountFromInstruction(ix) {
-    if (!ix?.parsed) return null;
-    const type = ix.parsed.type;
-    if (type !== 'burn' && type !== 'burnChecked') return null;
-
-    const info = ix.parsed.info || {};
-    if (info.tokenAmount?.uiAmountString != null) {
-      return Number(info.tokenAmount.uiAmountString);
-    }
-    if (info.tokenAmount?.amount != null) {
-      const d = Number(info.tokenAmount.decimals || mintDecimals || 0);
-      return Number(info.tokenAmount.amount) / (10 ** d);
-    }
-    if (info.amount != null) {
-      return Number(info.amount) / (10 ** Number(mintDecimals || 0));
-    }
-    return null;
-  }
-
-  async function loadBurnTransactions(vaultAddress) {
-    const signatures = await rpc('getSignaturesForAddress', [
-      vaultAddress,
-      { limit:24, commitment:'confirmed' }
-    ]);
-
-    const list = Array.isArray(signatures) ? signatures.filter(x => !x.err).slice(0, 18) : [];
-    if (!list.length) return [];
-
-    const txs = await Promise.all(list.map(async item => {
-      try {
-        const tx = await rpc('getTransaction', [
-          item.signature,
-          {
-            encoding:'jsonParsed',
-            commitment:'confirmed',
-            maxSupportedTransactionVersion:0
-          }
-        ]);
-
-        let amount = 0;
-        for (const ix of collectParsedInstructions(tx)) {
-          const v = burnAmountFromInstruction(ix);
-          if (Number.isFinite(v) && v > 0) amount += v;
-        }
-
-        if (amount <= 0) return null;
-        return {
-          signature:item.signature,
-          amount,
-          blockTime:item.blockTime || tx?.blockTime || null
-        };
-      } catch (_) {
-        return null;
-      }
-    }));
-
-    return txs.filter(Boolean);
-  }
-
-  function renderBurnTransactions(items) {
-    if (!burnTxList) return;
-    burnTxList.innerHTML = '';
-
-    if (!items.length) {
-      burnTxList.hidden = true;
-      return;
-    }
-
-    items.slice(0, 3).forEach(item => {
-      const a = document.createElement('a');
-      a.href = `${SOLSCAN}/tx/${item.signature}`;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = `${fmt(item.amount)} · ${shortAddress(item.signature, 5, 5)}`;
-      burnTxList.appendChild(a);
-    });
-
-    burnTxList.hidden = false;
-  }
-
-  async function refreshChain() {
-    const mint = typeof cfg.mintAddress === 'string' ? cfg.mintAddress.trim() : '';
-    const vault = typeof cfg.burnVaultTokenAccount === 'string' ? cfg.burnVaultTokenAccount.trim() : '';
-    const program = typeof cfg.programId === 'string' ? cfg.programId.trim() : '';
-
-    const hasMint = Boolean(mint);
-    const hasVault = Boolean(vault);
-    const hasProgram = Boolean(program);
-
-    verifyMintAddress.textContent = hasMint ? shortAddress(mint) : 'Not configured';
-    verifyVaultAddress.textContent = hasVault ? shortAddress(vault) : 'Not configured';
-    verifyProgramAddress.textContent = hasProgram ? shortAddress(program) : 'Not configured';
-
-    if (hasMint) setExplorerLink(verifyMintLink, `/token/${mint}`);
-    if (hasVault) setExplorerLink(verifyVaultLink, `/account/${vault}`);
-    if (hasProgram) setExplorerLink(verifyProgramLink, `/account/${program}`);
-
-    if (!hasMint && !hasVault && !hasProgram) {
-      setLiveState('Awaiting on-chain addresses', 'waiting');
+    if (!state?.configured) {
+      setLiveState('Awaiting live configuration', 'waiting');
+      if (vaultProofText) vaultProofText.textContent = 'Waiting for reserve wallet';
+      if (burnProofText) burnProofText.textContent = 'Waiting for fee treasury data';
+      if (upgradeProofText) upgradeProofText.textContent = 'Waiting for token pair';
       setVerifyStatus(vaultProofStatus, 'WAITING', 'waiting');
       setVerifyStatus(burnProofStatus, 'WAITING', 'waiting');
       setVerifyStatus(upgradeProofStatus, 'WAITING', 'waiting');
       return;
     }
 
-    setLiveState('Reading Solana', 'live');
+    setLiveState(`ENGINE ${state.plan?.action || 'LIVE'}`.replaceAll('_', ' '), 'live');
 
+    if (vaultProofText) {
+      vaultProofText.textContent = `${fmt(reserveBalance)} KRYPHOS remaining · ${fmt(state.funding?.reservePercentRemaining || 0)}% of reserve`;
+    }
+    setVerifyStatus(vaultProofStatus, reserve ? 'PUBLIC' : 'WAITING', reserve ? 'verified' : 'waiting');
+
+    const feesUsd = Number(state?.funding?.feesFirstUsd || 0);
+    const unclaimed = Number(state?.funding?.unclaimedCreatorFeesSol || 0);
+    if (burnProofText) {
+      burnProofText.textContent = `$${fmt(feesUsd)} fees/treasury available first · ${fmt(unclaimed)} SOL unclaimed creator fees`;
+    }
+    setVerifyStatus(burnProofStatus, 'FEES FIRST', 'verified');
+
+    const active = Number(state?.market?.activeBoosts || 0);
+    if (upgradeProofText) {
+      upgradeProofText.textContent = `${active} active · next pack ${state?.plan?.packBoosts || '—'} · ${state?.market?.pairDex || 'DEX'} pair`;
+    }
+    setVerifyStatus(upgradeProofStatus, active >= 500 ? 'GOLDEN' : active > 0 ? 'ACTIVE' : 'LIVE', active > 0 ? 'verified' : 'protocol');
+
+    const impact = Number(state?.plan?.estimatedPriceImpactPct);
+    const limit = Number(state?.guard?.maxPriceImpactPct ?? cfg.maxPriceImpactPct ?? 0.5);
+    if (reserveGuardText) {
+      reserveGuardText.textContent = Number.isFinite(impact)
+        ? `${impact.toFixed(3)}% estimated · ${limit.toFixed(2)}% configured limit`
+        : `${limit.toFixed(2)}% limit · live quote required before reserve sale`;
+    }
+    setVerifyStatus(
+      reserveGuardStatus,
+      Number.isFinite(impact) && impact > limit ? 'BLOCKED' : 'GUARDED',
+      Number.isFinite(impact) && impact > limit ? 'alert' : 'verified'
+    );
+
+    if (boostDecisionText) {
+      const topup = Number(state?.plan?.reserveTopUpUsd || 0);
+      boostDecisionText.textContent = state?.plan?.packBoosts
+        ? `${state.plan.packBoosts} Boost · $${fmt(state.plan.packCostUsd || 0)} · reserve top-up $${fmt(topup)}`
+        : 'No safe pack selected yet · accumulating fees / liquidity';
+    }
+    setVerifyStatus(boostDecisionStatus, state?.plan?.packBoosts ? 'READY' : 'WAIT', state?.plan?.packBoosts ? 'verified' : 'waiting');
+  }
+
+  async function loadBoostState() {
     try {
-      let vaultBalance = null;
-      let burnTxs = [];
-
-      if (hasMint) {
-        const supply = await rpc('getTokenSupply', [
-          mint,
-          { commitment:'confirmed' }
-        ]);
-
-        const raw = Number(supply?.value?.amount);
-        mintDecimals = Number(supply?.value?.decimals || 0);
-
-        if (Number.isFinite(raw)) {
-          liveSupply = raw / (10 ** mintDecimals);
-          verifyTotalSupply.textContent = fmt(liveSupply);
-          setStats(vaultBalance);
-          renderSchedule();
+      const url = cfg.boostStateUrl || 'boost-state.json';
+      const r = await fetch(`${url}?t=${Date.now()}`, { cache:'no-store' });
+      if (!r.ok) throw new Error(`state ${r.status}`);
+      const state = await r.json();
+      applyBoostState(state);
+    } catch (_) {
+      applyBoostState({
+        configured:false,
+        addresses:{
+          mint:cfg.mintAddress || '',
+          reserveWallet:cfg.boostReserveWallet || '',
+          boostTreasuryWallet:cfg.boostTreasuryWallet || ''
         }
-      }
-
-      if (hasVault) {
-        const vaultData = await rpc('getTokenAccountBalance', [
-          vault,
-          { commitment:'confirmed' }
-        ]);
-
-        const raw = Number(vaultData?.value?.amount);
-        const decimals = Number(vaultData?.value?.decimals ?? mintDecimals ?? 0);
-
-        if (Number.isFinite(raw)) {
-          vaultBalance = raw / (10 ** decimals);
-          verifyVaultBalance.textContent = fmt(vaultBalance);
-          setStats(vaultBalance);
-        }
-
-        vaultProofText.textContent = Number.isFinite(vaultBalance)
-          ? `${fmt(vaultBalance)} tokens currently in Burn Vault`
-          : 'Burn Vault account is public on-chain';
-        setVerifyStatus(vaultProofStatus, 'VERIFIED', 'verified');
-
-        burnTxs = await loadBurnTransactions(vault);
-        renderBurnTransactions(burnTxs);
-      }
-
-      const burned = Math.max(0, Number(cfg.initialSupply || 1000000000) - liveSupply);
-      const completedStages = burnSchedule.filter(row => burned >= row[2]).length;
-
-      burnProofText.textContent = burnTxs.length
-        ? `${fmt(burned)} burned · ${completedStages}/10 stages · ${burnTxs.length} burn tx found`
-        : `${fmt(burned)} burned · ${completedStages}/10 stages`;
-
-      if (hasMint) {
-        setVerifyStatus(
-          burnProofStatus,
-          burned > 0 ? 'VERIFIED' : 'LIVE',
-          burned > 0 ? 'verified' : 'protocol'
-        );
-      }
-
-      if (hasProgram) {
-        const authority = await readUpgradeAuthority(program);
-
-        if (authority.state === 'immutable') {
-          upgradeProofText.textContent = authority.text;
-          setVerifyStatus(upgradeProofStatus, 'IMMUTABLE', 'verified');
-        } else if (authority.state === 'authority') {
-          upgradeProofText.textContent = authority.text;
-          setVerifyStatus(upgradeProofStatus, 'PRESENT', 'alert');
-        } else if (authority.state === 'alert' || authority.state === 'missing') {
-          upgradeProofText.textContent = authority.text;
-          setVerifyStatus(upgradeProofStatus, 'CHECK', 'alert');
-        } else {
-          upgradeProofText.textContent = authority.text;
-          setVerifyStatus(upgradeProofStatus, 'LIVE', 'protocol');
-        }
-      }
-
-      setLiveState(
-        `Solana live · ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`,
-        'live'
-      );
-    } catch (err) {
-      setLiveState(`RPC unavailable`, 'error');
-      if (vaultProofText && hasVault) vaultProofText.textContent = `Unable to read Solana: ${err.message}`;
+      });
     }
   }
 
-  refreshChain();
-  if (cfg.refreshMs && (cfg.mintAddress || cfg.burnVaultTokenAccount || cfg.programId)) {
-    setInterval(refreshChain, Math.max(15000, Number(cfg.refreshMs) || 30000));
-  }
+  loadBoostState();
+  setInterval(loadBoostState, Math.max(15000, Number(cfg.refreshMs) || 30000));
 })();

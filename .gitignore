@@ -47,3 +47,9 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# KRYPHOS adaptive boost engine runtime/secrets
+kryphos_boost/.env
+kryphos_boost/.secrets/
+kryphos_boost/node_modules/
+kryphos_boost/runtime/

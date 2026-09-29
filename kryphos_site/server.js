@@ -44,6 +44,18 @@ const server = http.createServer((req, res) => {
   });
 });
 
+
+// KRYPHOS BOOST ENGINE LOOP
+// Runs inside the existing web process. It is read-only by default.
+// Trading actions remain separately gated in kryphos_boost/sell-reserve.mjs.
+if (process.env.BOOST_ENGINE_ENABLED === '1') {
+  import('../kryphos_boost/engine.mjs')
+    .then(({ startEngine }) => startEngine({
+      intervalMs: Math.max(30000, Number(process.env.BOOST_ENGINE_INTERVAL_MS || 60000))
+    }))
+    .catch(err => console.error('[boost-engine]', err?.message || err));
+}
+
 server.listen(port, '0.0.0.0', () => {
   console.log(`KRYPHOS site running on http://0.0.0.0:${port}`);
 });

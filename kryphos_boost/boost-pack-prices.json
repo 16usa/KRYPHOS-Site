@@ -1,0 +1,26 @@
+{
+  "asOf": "2026-09-29",
+  "source": "Planning defaults only. Confirm current DEX Screener checkout prices before enabling live reserve sales.",
+  "packs": [
+    {
+      "boosts": 10,
+      "usd": 99
+    },
+    {
+      "boosts": 30,
+      "usd": 249
+    },
+    {
+      "boosts": 50,
+      "usd": 399
+    },
+    {
+      "boosts": 100,
+      "usd": 899
+    },
+    {
+      "boosts": 500,
+      "usd": 3999
+    }
+  ]
+}

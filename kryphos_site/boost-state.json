@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "generatedAt": null,
+  "configured": false,
+  "status": "WAITING_CONFIGURATION",
+  "addresses": {
+    "mint": "",
+    "reserveWallet": "",
+    "boostTreasuryWallet": "",
+    "creatorWallet": ""
+  },
+  "funding": {
+    "reserveTokenBalance": 100000000,
+    "reservePercentRemaining": 100,
+    "treasurySol": 0,
+    "unclaimedCreatorFeesSol": 0,
+    "feesFirstUsd": 0
+  },
+  "market": {
+    "priceUsd": null,
+    "solUsd": null,
+    "liquidityUsd": null,
+    "liquidityBase": null,
+    "marketCap": null,
+    "activeBoosts": 0,
+    "pairDex": null,
+    "pairAddress": null
+  },
+  "guard": {
+    "maxPriceImpactPct": 0.5
+  },
+  "pricing": {
+    "packs": []
+  },
+  "plan": {
+    "action": "WAITING_CONFIGURATION",
+    "packBoosts": null,
+    "packCostUsd": null,
+    "reserveTopUpUsd": 0,
+    "reserveTokensToSell": 0,
+    "estimatedPriceImpactPct": null
+  }
+}
