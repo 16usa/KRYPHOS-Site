@@ -854,3 +854,8 @@ button,
 @media(max-width:580px){
   .boost-loop{font-size:clamp(45px,15vw,78px);}
 }
+
+/* KRYPHOS v1.1 hidden verification links */
+.verify-chain-cell a[hidden] {
+  display: none !important;
+}
