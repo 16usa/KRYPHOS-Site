@@ -19,7 +19,6 @@ echo "=== KRYPHOS SAFE BUILD ==="
 
 [[ -f target/deploy/kryphos_burn-keypair.json ]] || {
   echo "ERROR: Program keypair missing."
-  echo "Restore the backed-up KRYPhOS program keypair before building."
   exit 1
 }
 

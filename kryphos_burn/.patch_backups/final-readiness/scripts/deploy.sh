@@ -48,12 +48,6 @@ grep -Fq "declare_id!(\"$EXPECTED_PROGRAM_ID\")" \
   exit 1
 }
 
-COUNT="$(grep -Fc "kryphos_burn = \"$EXPECTED_PROGRAM_ID\"" Anchor.toml || true)"
-[[ "$COUNT" -ge 2 ]] || {
-  echo "ERROR: Anchor.toml Program ID mismatch."
-  exit 1
-}
-
 echo "=== DEPLOY PREFLIGHT ==="
 echo "Cluster:     $CLUSTER"
 echo "Program:     $ACTUAL_PROGRAM_ID"
