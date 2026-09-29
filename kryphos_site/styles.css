@@ -1647,3 +1647,292 @@ body {
     font-size:5.4px !important;
   }
 }
+
+/* KRYPHOS LIVE ORBIT + TERMINAL TYPE v1
+   Fixes the orbit so movement is unmistakable.
+   Uses a terminal/system typography layer for all supporting text
+   while preserving the KRYPHOS wordmark and major titles in serif.
+*/
+
+/* ---------- REAL VISIBLE ORBIT MOTION ---------- */
+/* Turn the existing .orbit-dot into a full rotating carrier.
+   The pseudo-element is the visible light moving around the ring. */
+.orbit-dot {
+  position:absolute !important;
+  inset:6% !important;
+  left:auto !important;
+  top:auto !important;
+  width:auto !important;
+  height:auto !important;
+  margin:0 !important;
+  border-radius:50% !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transform-origin:50% 50% !important;
+  animation:kryphosOrbitCarrier 14s linear infinite !important;
+  will-change:transform;
+  pointer-events:none;
+}
+
+.orbit-dot::before {
+  content:'';
+  position:absolute;
+  left:50%;
+  top:-5px;
+  width:10px;
+  height:10px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:#fff;
+  box-shadow:
+    0 0 10px rgba(255,255,255,.95),
+    0 0 28px rgba(255,255,255,.55),
+    0 0 52px rgba(255,255,255,.20);
+}
+
+/* a faint trailing arc makes the motion readable even at a glance */
+.orbit-dot::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border-top:1px solid rgba(255,255,255,.48);
+  border-right:1px solid transparent;
+  border-bottom:1px solid transparent;
+  border-left:1px solid transparent;
+  transform:rotate(-16deg);
+  opacity:.55;
+}
+
+.loop-pulse {
+  animation:kryphosLoopSweep 18s linear infinite !important;
+  will-change:transform;
+}
+
+@keyframes kryphosOrbitCarrier {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
+}
+
+@keyframes kryphosLoopSweep {
+  from { transform:rotate(0deg); }
+  to { transform:rotate(360deg); }
+}
+
+/* Keep animation active unless the user explicitly enabled OS Reduce Motion. */
+@media (prefers-reduced-motion:reduce) {
+  .orbit-dot,
+  .loop-pulse {
+    animation:none !important;
+  }
+}
+
+/* ---------- TERMINAL / SYSTEM TYPOGRAPHY ---------- */
+/* Major brand/title language remains formal serif. */
+.orbit-center h1,
+.final-brand,
+.display-title,
+.verify-head .display-title {
+  font-family:var(--font-display) !important;
+}
+
+/* Everything operational reads like a system/terminal. */
+body,
+p,
+.system-copy p,
+.loop-copy,
+.dark-step p,
+.dark-step h3,
+.section-kicker,
+.cycle-overline,
+.loop-node,
+.loop-center,
+.dark-metric span,
+.schedule th,
+.schedule td,
+.progress-line,
+.verify-live-state,
+.verify-chain-cell > span,
+.verify-chain-cell code,
+.verify-chain-cell a,
+.verify-proof-row > span,
+.verify-proof-row b,
+.verify-proof-row small,
+.verify-status,
+.final-sub,
+.swipe-hint,
+.deck-counter {
+  font-family:var(--font-mono) !important;
+}
+
+/* Keep numbers/data crisp and uniform. */
+.dark-metric strong,
+.verify-chain-cell strong,
+.step-index,
+#progressPct {
+  font-family:var(--font-mono) !important;
+  font-variant-numeric:tabular-nums;
+}
+
+/* Terminal body text should not become dense or "hacker-green". */
+p,
+.system-copy p,
+.loop-copy,
+.dark-step p,
+.verify-proof-row small {
+  letter-spacing:-.015em;
+}
+
+/* Operational headings get a restrained console feel. */
+.dark-step h3,
+.verify-proof-row b {
+  font-weight:500 !important;
+  letter-spacing:-.02em;
+}
+
+/* Keep the KRYPHOS brand elegant rather than turning the whole identity into code. */
+.orbit-center h1,
+.final-brand {
+  letter-spacing:.28em !important;
+  text-indent:.28em !important;
+}
+
+/* Slightly increase contrast of the live moving system. */
+.orbit-ring,
+.loop-ring {
+  border-color:rgba(255,255,255,.52) !important;
+}
+
+/* iPhone: make the moving point a touch easier to notice. */
+@media (max-width:760px) {
+  .orbit-dot::before {
+    width:11px;
+    height:11px;
+    top:-5.5px;
+    box-shadow:
+      0 0 11px rgba(255,255,255,1),
+      0 0 30px rgba(255,255,255,.62),
+      0 0 54px rgba(255,255,255,.22);
+  }
+
+  .system-copy p,
+  .loop-copy,
+  .dark-step p {
+    line-height:1.5 !important;
+  }
+}
+
+/* KRYPHOS FULL MONO TYPOGRAPHY v1
+   One typeface across the entire site: IBM Plex Mono.
+   No serif, no secondary sans.
+*/
+:root {
+  --font-display:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  --font-ui:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  --font-mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+html,
+body,
+body *,
+body *::before,
+body *::after {
+  font-family:var(--font-mono) !important;
+}
+
+/* Large headings need tighter sizing with a fixed-width face. */
+.display-title,
+.intro-copy h2,
+.section-title,
+.verify-head .display-title {
+  font-weight:500 !important;
+  letter-spacing:-.055em !important;
+  line-height:.92 !important;
+}
+
+.orbit-center h1,
+.final-brand {
+  font-weight:500 !important;
+  letter-spacing:.24em !important;
+  text-indent:.24em !important;
+}
+
+.final-message strong {
+  font-weight:500 !important;
+  letter-spacing:-.035em !important;
+}
+
+.dark-step h3,
+.verify-proof-row b {
+  font-weight:500 !important;
+  letter-spacing:-.025em !important;
+}
+
+p,
+.system-copy p,
+.loop-copy,
+.dark-step p,
+.verify-proof-row small {
+  font-weight:400 !important;
+  letter-spacing:-.02em !important;
+}
+
+.section-kicker,
+.cycle-overline,
+.loop-node,
+.loop-center,
+.dark-metric span,
+.schedule th,
+.verify-live-state,
+.verify-chain-cell > span,
+.verify-status,
+.final-sub,
+.swipe-hint,
+.deck-counter {
+  font-weight:600 !important;
+}
+
+/* Mono data layer */
+.schedule td,
+.verify-chain-cell code,
+.verify-chain-cell strong,
+.dark-metric strong,
+.step-index,
+#progressPct {
+  font-variant-numeric:tabular-nums !important;
+}
+
+/* Protect mobile layout from mono's wider glyphs. */
+@media (max-width:760px) {
+  .display-title,
+  .intro-copy h2,
+  .section-title,
+  .verify-head .display-title {
+    font-size:clamp(36px,10.2vw,56px) !important;
+    letter-spacing:-.045em !important;
+  }
+
+  .orbit-center h1 {
+    font-size:clamp(26px,8.2vw,44px) !important;
+    letter-spacing:.20em !important;
+    text-indent:.20em !important;
+  }
+
+  .final-brand {
+    letter-spacing:.20em !important;
+    text-indent:.20em !important;
+  }
+
+  .final-message strong {
+    font-size:clamp(18px,5.4vw,27px) !important;
+  }
+}
+
+@media (max-width:390px) {
+  .display-title,
+  .intro-copy h2,
+  .section-title,
+  .verify-head .display-title {
+    font-size:clamp(34px,9.6vw,50px) !important;
+  }
+}

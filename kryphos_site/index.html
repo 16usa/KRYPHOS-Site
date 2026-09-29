@@ -4,30 +4,71 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
-  <meta name="description" content="KRYPHOS — adaptive fee-funded Promotion Engine with a transparent 10% marketing reserve." />
-  <title>KRYPHOS — Adaptive Promotion Engine</title>
+  <meta name="description" content="KRYPHOS — a continuous fee-powered promotion system with public verification and an adaptive reserve." />
+  <title>KRYPHOS — Continuous by Design</title>
+
+  <!-- KRYPHOS formal typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main id="deck" class="deck" aria-live="polite">
-    <section class="hero slide active" data-slide="0" aria-label="KRYPHOS">
-      <div class="scene" id="scene" aria-hidden="true">
-        <img class="scene-image" src="assets/kryphos-hero.jpeg" alt="" draggable="false" />
-        <div class="door-glow"></div>
+
+    <section class="hero cycle-hero slide active" data-slide="0" aria-label="KRYPHOS">
+      <!-- Compatibility nodes preserve the existing FX/runtime hooks without rendering the old hero artwork. -->
+      <div class="scene legacy-hero-fx" id="scene" aria-hidden="true">
         <canvas id="mistCanvas" class="fx mist"></canvas>
-        <div class="light-column"></div>
         <canvas id="waterCanvas" class="fx water"></canvas>
-        <div class="scene-vignette"></div>
       </div>
-      <h1 class="sr-only">KRYPHOS</h1>
+
+      <div class="cycle-stage reveal">
+        <div class="cycle-overline">CONTINUOUS SYSTEM</div>
+
+        <div class="orbital-mark hero-orbit" aria-hidden="true">
+          <div class="orbit-ring"></div>
+          <div class="orbit-haze"></div>
+          <div class="orbit-dot"></div>
+          <div class="orbit-center">
+            <h1>KRYPHOS</h1>
+            <p>CONTINUOUS BY DESIGN</p>
+          </div>
+        </div>
+      </div>
+
       <div class="scroll-mark" aria-hidden="true"><span></span></div>
     </section>
 
-    <section class="paper protocol slide" data-slide="1" id="protocol">
-      <div class="wrap intro-grid">
-        <div class="intro-copy reveal">
-          <div class="eyebrow">THE ENGINE</div>
-          <h2>Adaptive<br />Promotion System</h2>
+    <section class="dark-panel loop-panel slide" data-slide="1">
+      <div class="dark-wrap loop-layout reveal">
+        <div class="section-kicker">THE LOOP</div>
+        <h2 class="display-title loop-title">The System<br />Behind the Signal</h2>
+
+        <div class="loop-diagram" aria-label="Trading, fees, promotion and visibility repeat continuously">
+          <div class="loop-ring"></div>
+          <div class="loop-pulse"></div>
+          <div class="loop-center">A CONTINUOUS<br />CYCLE</div>
+
+          <div class="loop-node node-trading"><i></i><span>TRADING</span></div>
+          <div class="loop-node node-fees"><i></i><span>FEES</span></div>
+          <div class="loop-node node-promotion"><i></i><span>PROMOTION</span></div>
+          <div class="loop-node node-visibility"><i></i><span>VISIBILITY</span></div>
+        </div>
+
+        <p class="loop-copy">
+          Trading generates fees. Fees fund promotion. Promotion expands visibility.
+          Visibility brings more trading. The cycle repeats.
+        </p>
+      </div>
+    </section>
+
+    <section class="dark-panel system-panel slide" data-slide="2" id="protocol">
+      <div class="dark-wrap system-grid">
+        <div class="system-copy reveal">
+          <div class="section-kicker">THE ENGINE</div>
+          <h2 class="display-title">Adaptive<br />Promotion System</h2>
           <p>
             Trading fees fund visibility first. A dedicated 10% Promotion Reserve exists only
             as a controlled fallback when the fee treasury is short. The engine continuously
@@ -35,48 +76,66 @@
             before selecting the next action.
           </p>
         </div>
-        <div class="core-stats reveal" aria-label="KRYPHOS promotion system statistics">
-          <div class="metric"><span>Total supply</span><strong data-stat="initial">1,000,000,000</strong></div>
-          <div class="metric"><span>Dedicated Promotion Reserve</span><strong data-stat="vault">100,000,000</strong></div>
-          <div class="metric"><span>Reserve share</span><strong>10%</strong></div>
-          <div class="metric"><span>Engine</span><strong>Continuous</strong></div>
+
+        <div class="dark-stats reveal" aria-label="KRYPHOS promotion system statistics">
+          <div class="dark-metric"><span>Total supply</span><strong data-stat="initial">1,000,000,000</strong></div>
+          <div class="dark-metric"><span>Promotion reserve</span><strong data-stat="vault">100,000,000</strong></div>
+          <div class="dark-metric"><span>Reserve share</span><strong>10%</strong></div>
+          <div class="dark-metric"><span>Engine</span><strong>Continuous</strong></div>
         </div>
       </div>
     </section>
 
-    <section class="paper mechanics slide" data-slide="2">
-      <div class="wrap">
+    <section class="dark-panel mechanics slide" data-slide="3">
+      <div class="dark-wrap">
         <div class="section-kicker reveal">MECHANICS</div>
-        <h2 class="section-title reveal">How It Works</h2>
-        <div class="steps">
-          <article class="step reveal">
-            <div class="step-no">01</div>
-            <h3>Trading generates fees</h3>
-            <p>Creator fees accumulate as the token trades. Fees are the engine's primary funding source.</p>
+        <h2 class="display-title reveal">How It Works</h2>
+
+        <div class="dark-steps">
+          <article class="dark-step reveal">
+            <div class="step-index">01</div>
+            <div class="step-line"><i></i></div>
+            <div>
+              <h3>Trading generates fees</h3>
+              <p>Creator fees accumulate as the token trades. Fees are the engine's primary funding source.</p>
+            </div>
           </article>
-          <article class="step reveal">
-            <div class="step-no">02</div>
-            <h3>Fees are used first</h3>
-            <p>The Promotion Treasury is always consumed before any KRYPHOS from the reserve is considered.</p>
+
+          <article class="dark-step reveal">
+            <div class="step-index">02</div>
+            <div class="step-line"><i></i></div>
+            <div>
+              <h3>Fees are used first</h3>
+              <p>The Promotion Treasury is always consumed before any KRYPHOS from the reserve is considered.</p>
+            </div>
           </article>
-          <article class="step reveal">
-            <div class="step-no">03</div>
-            <h3>Reserve covers only the gap</h3>
-            <p>If funding is short, the engine calculates only the minimum reserve top-up required for the selected promotion level.</p>
+
+          <article class="dark-step reveal">
+            <div class="step-index">03</div>
+            <div class="step-line"><i></i></div>
+            <div>
+              <h3>Reserve covers only the gap</h3>
+              <p>If funding is short, the engine calculates only the minimum reserve top-up required for the selected level.</p>
+            </div>
           </article>
-          <article class="step reveal">
-            <div class="step-no">04</div>
-            <h3>Market guard decides</h3>
-            <p>If the reserve sale would exceed the configured price-impact limit, the engine steps down or waits.</p>
+
+          <article class="dark-step reveal">
+            <div class="step-index">04</div>
+            <div class="step-line"><i></i></div>
+            <div>
+              <h3>Market guard decides</h3>
+              <p>If the reserve sale exceeds the configured price-impact limit, the engine steps down or waits.</p>
+            </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="paper schedule-section slide" data-slide="3">
-      <div class="wrap">
+    <section class="dark-panel schedule-section slide" data-slide="4">
+      <div class="dark-wrap">
         <div class="section-kicker reveal">ADAPTIVE FUNDING</div>
-        <h2 class="section-title reveal">Promotion Levels</h2>
+        <h2 class="display-title reveal">Promotion Levels</h2>
+
         <div class="schedule-wrap reveal">
           <table class="schedule" aria-label="Adaptive promotion levels">
             <thead>
@@ -85,6 +144,7 @@
             <tbody id="scheduleBody"></tbody>
           </table>
         </div>
+
         <div class="progress-line reveal">
           <span id="progressLabel">Waiting for live market data</span>
           <div class="track"><i id="progressBar"></i></div>
@@ -93,12 +153,12 @@
       </div>
     </section>
 
-    <section class="paper verification slide" data-slide="4">
-      <div class="wrap verification-live">
+    <section class="dark-panel verification slide" data-slide="5">
+      <div class="dark-wrap verification-live">
         <div class="verify-head reveal">
           <div>
             <div class="section-kicker">VERIFICATION</div>
-            <h2 class="section-title">Public &amp;<br />Verifiable</h2>
+            <h2 class="display-title">Public &amp;<br />Verifiable</h2>
           </div>
           <div class="verify-live-state" id="verifyLiveState">
             <i></i>
@@ -117,7 +177,7 @@
             <strong id="verifyTotalSupply">1,000,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Promotion Reserve</span>
+            <span>Promotion reserve</span>
             <code id="verifyVaultAddress">Not configured</code>
             <a id="verifyVaultLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
@@ -126,7 +186,7 @@
             <strong id="verifyVaultBalance">100,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Promotion Treasury</span>
+            <span>Promotion treasury</span>
             <code id="verifyProgramAddress">Not configured</code>
             <a id="verifyProgramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
@@ -182,35 +242,33 @@
       </div>
     </section>
 
-    <section class="finale slide" data-slide="5">
+    <section class="finale loop-finale slide" data-slide="6">
       <div class="finale-inner reveal">
-        <div class="section-kicker">ADAPTIVE LOOP</div>
-        <div class="final-number boost-loop"><b>FEES</b><span>→</span><b>PROMOTION</b></div>
-        <p>Fees first. Reserve only for the shortfall. Liquidity guard before every reserve sale.</p>
+        <div class="section-kicker">THE LOOP</div>
+
+        <div class="orbital-mark finale-orbit" aria-hidden="true">
+          <div class="orbit-ring"></div>
+          <div class="orbit-haze"></div>
+          <div class="orbit-dot"></div>
+          <div class="final-message">
+            <strong>IT DOESN'T END.</strong>
+            <strong>IT RETURNS.</strong>
+          </div>
+        </div>
+
+        <div class="final-brand">KRYPHOS</div>
+        <div class="final-sub">CONTINUOUS BY DESIGN</div>
       </div>
     </section>
+
   </main>
 
   <div class="deck-ui" aria-hidden="true">
-    <div class="deck-counter"><span id="deckCurrent">01</span><i></i><span id="deckTotal">06</span></div>
+    <div class="deck-counter"><span id="deckCurrent">01</span><i></i><span id="deckTotal">07</span></div>
     <div class="deck-dots" id="deckDots"></div>
   </div>
+
   <div class="swipe-hint" id="swipeHint" aria-hidden="true">SWIPE UP <span>↑</span></div>
-
-
-  <div class="signal-fx" aria-hidden="true">
-    <div class="signal-noise"></div>
-    <div class="signal-scan"></div>
-    <div class="signal-glitch g1"></div>
-    <div class="signal-glitch g2"></div>
-  </div>
-
-
-  <div class="forensic-overlay" id="forensicOverlay" aria-hidden="true">
-    <div class="forensic-grid" id="forensicGrid"></div>
-    <div class="forensic-corner top-left" id="forensicTopLeft"></div>
-    <div class="forensic-corner bottom-right" id="forensicBottomRight"></div>
-  </div>
 
   <script src="config.js"></script>
   <script src="script.js"></script>
