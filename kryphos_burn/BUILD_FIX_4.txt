@@ -1,0 +1,17 @@
+KRYPHOS Pyth dependency unification fix.
+
+The dependency tree proved the remaining Rust-2024 branch comes from
+pythnet-sdk 2.3.1. Its published manifest allows:
+  anchor-lang >=0.28.0
+  solana-program >=1.13.6
+
+Those open-ended ranges let Cargo in 2026 resolve a second graph:
+  anchor-lang 1.2.0 -> sha2 0.11 -> block-buffer 0.12
+  solana-program 5.1.0 -> blake3 1.8 -> block-buffer 0.12
+
+Anchor 0.31.1 and Solana 2.1.0 both satisfy pythnet-sdk's declared ranges.
+This build script therefore forces that transitive Pyth branch to reuse the
+same Anchor 0.31.1 + Solana 2.1.0 graph already used by KRYPHOS.
+
+No token logic, Program ID, website files, deploy settings, server command,
+or restart/run behavior is changed.
