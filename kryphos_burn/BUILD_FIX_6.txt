@@ -1,0 +1,20 @@
+KRYPHOS Anchor/cargo-build-sbf forwarding fix.
+
+The dependency graph is now unified correctly. The latest failure is only CLI
+argument forwarding:
+
+  anchor build -- --locked
+
+causes Anchor 0.31.1 to pass `--locked` directly to Solana 2.1.0's
+cargo-build-sbf, where it is not a top-level option.
+
+This patch validates Cargo.lock first with:
+  cargo metadata --locked --no-deps
+
+and then runs:
+  anchor build
+
+The generated and pinned Cargo.lock remains the dependency source for the build.
+
+No burn logic, Program ID, website files, deploy configuration, server command,
+or restart/run behavior is changed.
