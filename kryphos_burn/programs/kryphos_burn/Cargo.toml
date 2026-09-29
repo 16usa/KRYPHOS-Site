@@ -34,7 +34,7 @@ blake3 = "=1.5.5"
 
 # Keep direct crypto dependencies on Rust-2021-compatible releases.
 sha2 = "=0.10.9"
-base64ct = "=1.7.3"
+base64ct = "=1.6.0"
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = [
