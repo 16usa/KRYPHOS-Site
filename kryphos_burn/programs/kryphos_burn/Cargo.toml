@@ -17,9 +17,17 @@ no-log-ix-name = []
 idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 [dependencies]
-anchor-lang = "0.31.1"
-anchor-spl = { version = "0.31.1", features = ["token_2022"] }
-pyth-solana-receiver-sdk = "1.0.1"
+# Exact pins are intentional.  Solana 2.1.0's SBF platform tools use an older
+# Cargo internally, so allowing caret upgrades can resolve 2026 crates that
+# require Rust edition 2024 and fail inside cargo-build-sbf.
+anchor-lang = "=0.31.1"
+anchor-spl = { version = "=0.31.1", features = ["token_2022"] }
+pyth-solana-receiver-sdk = "=1.0.1"
+pythnet-sdk = "=2.3.1"
+
+# Keep the RustCrypto / SBF dependency graph on Rust-2021-compatible releases.
+sha2 = "=0.10.9"
+base64ct = "=1.7.3"
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = [

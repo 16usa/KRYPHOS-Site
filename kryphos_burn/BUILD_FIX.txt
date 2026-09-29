@@ -1,0 +1,15 @@
+KRYPHOS SBF dependency build fix.
+
+Reason:
+- `pyth-solana-receiver-sdk = "1.0.1"` used a caret range, so Cargo could
+  resolve newer 1.x releases.
+- pyth-solana-receiver-sdk 1.2.0 depends on Anchor 0.32.1+.
+- the failed lockfile also resolved block-buffer 0.12.1, which uses Rust
+  edition 2024 and cannot be parsed by the Cargo 1.79 bundled in the
+  Solana 2.1.0 SBF platform tools.
+
+This patch pins the compatible dependency family exactly and rebuilds the
+lockfile before `anchor build --locked`.
+
+It does not touch Anchor.toml, lib.rs, the generated Program ID, website
+files, or any server/restart configuration.
