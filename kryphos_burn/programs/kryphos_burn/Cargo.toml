@@ -1,0 +1,28 @@
+[package]
+name = "kryphos-burn"
+version = "0.1.0"
+description = "KRYPHOS immutable staged burn vault"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "kryphos_burn"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+anchor-spl = { version = "0.31.1", features = ["token_2022"] }
+pyth-solana-receiver-sdk = "1.0.1"
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = [
+  'cfg(target_os, values("solana"))',
+  'cfg(feature, values("custom-heap", "custom-panic", "anchor-debug"))'
+] }

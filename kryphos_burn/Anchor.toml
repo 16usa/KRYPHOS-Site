@@ -1,0 +1,20 @@
+[toolchain]
+anchor_version = "0.31.1"
+solana_version = "2.1.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+kryphos_burn = "11111111111111111111111111111111"
+
+[programs.mainnet]
+kryphos_burn = "11111111111111111111111111111111"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "node scripts/preflight.mjs"

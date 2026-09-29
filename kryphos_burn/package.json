@@ -1,0 +1,15 @@
+{
+  "name": "kryphos-burn-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preflight": "node scripts/preflight.mjs",
+    "status": "node scripts/status.mjs"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.31.1",
+    "@pythnetwork/pyth-solana-receiver": "0.11.0",
+    "@solana/spl-token": "0.4.14",
+    "@solana/web3.js": "1.98.4"
+  }
+}
