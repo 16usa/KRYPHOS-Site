@@ -1,3 +1,19 @@
+
+## Replit toolchain note
+
+Replit may expose `/home/runner/.bashrc` as read-only. This package therefore installs
+Rust, Anchor and Solana into `kryphos_burn/.tooling/` and never needs to edit the shell profile.
+
+Use:
+
+```bash
+./scripts/install-tools.sh
+./scripts/preflight.sh
+```
+
+The `.tooling/` directory is gitignored and can also contain the local Solana CLI config/wallet;
+do not commit it.
+
 # KRYPHOS Burn Program
 
 This package implements only the burn mechanics already published on the KRYPHOS site:

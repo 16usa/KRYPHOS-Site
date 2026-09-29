@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$HOME/.cargo/env" 2>/dev/null || true
-export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/env.sh"
 
 CLUSTER="${1:-devnet}"
 RPC="${SOLANA_RPC_URL:-}"

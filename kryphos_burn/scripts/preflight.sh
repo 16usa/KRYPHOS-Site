@@ -2,12 +2,4 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/env.sh"
-
-anchor keys sync
-anchor build
 node "$SCRIPT_DIR/preflight.mjs"
-
-echo
-echo "Build complete."
-echo "Program ID:"
-anchor keys list
