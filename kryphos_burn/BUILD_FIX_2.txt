@@ -1,0 +1,8 @@
+KRYPHOS Anchor build command fix.
+
+Fixes two shell-level issues from the previous build attempt:
+1. Replaces the awk Cargo.lock guard that failed on escaped quotes with grep.
+2. Passes `--locked` to Anchor 0.31.1 after `--`, as required by its CLI.
+
+No token logic, Program ID, website files, server settings, deploy settings,
+or restart/run commands are changed by this patch.

@@ -11,9 +11,7 @@ echo "KRYPHOS dependency repair + SBF build"
 echo "This does NOT start or restart the website."
 echo
 
-# The previous failed build may have produced a lockfile that resolved
-# pyth-solana-receiver-sdk 1.2.x / Anchor 0.32.x and Rust-2024 crypto crates.
-# Recreate it from the exact compatible pins above.
+# Recreate the lockfile from the exact dependency pins.
 rm -f Cargo.lock
 cargo generate-lockfile
 
@@ -23,15 +21,10 @@ cargo tree -p kryphos-burn --depth 2 | grep -E \
   'anchor-lang v|anchor-spl v|pyth-solana-receiver-sdk v|pythnet-sdk v|block-buffer v|base64ct v' \
   || true
 
-# Hard fail if the lockfile still contains the known incompatible block-buffer.
-if awk '
-  $0 == "name = \\"block-buffer\\"" { in_block=1; next }
-  in_block && $1 == "version" {
-    if ($3 ~ /\\"0\\.12\\./) bad=1
-    in_block=0
-  }
-  END { exit bad ? 0 : 1 }
-' Cargo.lock; then
+# Stop before Anchor compilation if the known incompatible Rust-2024
+# block-buffer 0.12.x somehow appears again.
+if grep -A1 '^name = "block-buffer"$' Cargo.lock \
+  | grep -q '^version = "0\.12\.'; then
   echo
   echo "ERROR: incompatible block-buffer 0.12.x is still present in Cargo.lock."
   echo "Build stopped before Anchor/SBF compilation."
@@ -39,7 +32,10 @@ if awk '
 fi
 
 anchor keys sync
-anchor build --locked
+
+# Anchor 0.31.1 requires Cargo/SBF arguments after `--`.
+anchor build -- --locked
+
 node "$SCRIPT_DIR/preflight.mjs"
 
 echo
