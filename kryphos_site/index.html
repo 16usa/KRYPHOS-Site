@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
-  <meta name="description" content="KRYPHOS — adaptive fee-funded Boost Engine with a transparent 10% marketing reserve." />
-  <title>KRYPHOS — Adaptive Boost Engine</title>
+  <meta name="description" content="KRYPHOS — adaptive fee-funded Promotion Engine with a transparent 10% marketing reserve." />
+  <title>KRYPHOS — Adaptive Promotion Engine</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -27,17 +27,17 @@
       <div class="wrap intro-grid">
         <div class="intro-copy reveal">
           <div class="eyebrow">THE ENGINE</div>
-          <h2>Adaptive<br />Boost Mechanics</h2>
+          <h2>Adaptive<br />Promotion System</h2>
           <p>
-            Trading fees fund visibility first. A dedicated 10% Boost Reserve exists only
+            Trading fees fund visibility first. A dedicated 10% Promotion Reserve exists only
             as a controlled fallback when the fee treasury is short. The engine continuously
             evaluates liquidity, available fees, reserve impact and active DEX Screener Boosts
             before selecting the next action.
           </p>
         </div>
-        <div class="core-stats reveal" aria-label="KRYPHOS boost system statistics">
+        <div class="core-stats reveal" aria-label="KRYPHOS promotion system statistics">
           <div class="metric"><span>Total supply</span><strong data-stat="initial">1,000,000,000</strong></div>
-          <div class="metric"><span>Dedicated Boost Reserve</span><strong data-stat="vault">100,000,000</strong></div>
+          <div class="metric"><span>Dedicated Promotion Reserve</span><strong data-stat="vault">100,000,000</strong></div>
           <div class="metric"><span>Reserve share</span><strong>10%</strong></div>
           <div class="metric"><span>Engine</span><strong>Continuous</strong></div>
         </div>
@@ -57,12 +57,12 @@
           <article class="step reveal">
             <div class="step-no">02</div>
             <h3>Fees are used first</h3>
-            <p>The Boost Treasury is always consumed before any KRYPHOS from the reserve is considered.</p>
+            <p>The Promotion Treasury is always consumed before any KRYPHOS from the reserve is considered.</p>
           </article>
           <article class="step reveal">
             <div class="step-no">03</div>
             <h3>Reserve covers only the gap</h3>
-            <p>If funding is short, the engine calculates only the minimum reserve top-up required for the selected Boost.</p>
+            <p>If funding is short, the engine calculates only the minimum reserve top-up required for the selected promotion level.</p>
           </article>
           <article class="step reveal">
             <div class="step-no">04</div>
@@ -76,11 +76,11 @@
     <section class="paper schedule-section slide" data-slide="3">
       <div class="wrap">
         <div class="section-kicker reveal">ADAPTIVE FUNDING</div>
-        <h2 class="section-title reveal">Boost Ladder</h2>
+        <h2 class="section-title reveal">Promotion Levels</h2>
         <div class="schedule-wrap reveal">
-          <table class="schedule" aria-label="Adaptive Boost ladder">
+          <table class="schedule" aria-label="Adaptive promotion levels">
             <thead>
-              <tr><th>Boost</th><th>Boost cost</th><th>Reserve top-up</th><th>Decision</th></tr>
+              <tr><th>Level</th><th>Promotion cost</th><th>Reserve top-up</th><th>Decision</th></tr>
             </thead>
             <tbody id="scheduleBody"></tbody>
           </table>
@@ -106,7 +106,7 @@
           </div>
         </div>
 
-        <div class="verify-chain-strip reveal" aria-label="Live boost system state">
+        <div class="verify-chain-strip reveal" aria-label="Live promotion system state">
           <div class="verify-chain-cell">
             <span>Mint</span>
             <code id="verifyMintAddress">Not configured</code>
@@ -117,7 +117,7 @@
             <strong id="verifyTotalSupply">1,000,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Boost Reserve</span>
+            <span>Promotion Reserve</span>
             <code id="verifyVaultAddress">Not configured</code>
             <a id="verifyVaultLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
@@ -126,7 +126,7 @@
             <strong id="verifyVaultBalance">100,000,000</strong>
           </div>
           <div class="verify-chain-cell">
-            <span>Boost Treasury</span>
+            <span>Promotion Treasury</span>
             <code id="verifyProgramAddress">Not configured</code>
             <a id="verifyProgramLink" href="#" target="_blank" rel="noopener noreferrer" hidden>OPEN</a>
           </div>
@@ -136,7 +136,7 @@
           <div class="verify-proof-row">
             <span>01</span>
             <div>
-              <b>Boost Reserve is public</b>
+              <b>Promotion Reserve is public</b>
               <small id="vaultProofText">Waiting for reserve wallet</small>
             </div>
             <em id="vaultProofStatus" class="verify-status waiting">WAITING</em>
@@ -173,7 +173,7 @@
           <div class="verify-proof-row">
             <span>05</span>
             <div>
-              <b>Adaptive Boost selection</b>
+              <b>Adaptive Promotion Selection</b>
               <small id="boostDecisionText">10 / 30 / 50 / 100 / 500 · highest safe affordable pack</small>
             </div>
             <em id="boostDecisionStatus" class="verify-status protocol">ENGINE</em>
@@ -185,7 +185,7 @@
     <section class="finale slide" data-slide="5">
       <div class="finale-inner reveal">
         <div class="section-kicker">ADAPTIVE LOOP</div>
-        <div class="final-number boost-loop">FEES <span>→</span> BOOST</div>
+        <div class="final-number boost-loop"><b>FEES</b><span>→</span><b>PROMOTION</b></div>
         <p>Fees first. Reserve only for the shortfall. Liquidity guard before every reserve sale.</p>
       </div>
     </section>

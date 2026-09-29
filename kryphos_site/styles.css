@@ -859,3 +859,35 @@ button,
 .verify-chain-cell a[hidden] {
   display: none !important;
 }
+
+/* KRYPHOS promotion finale mobile fit */
+.boost-loop {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.12em;
+  width:100%;
+  white-space:nowrap;
+}
+.boost-loop b {
+  font:inherit;
+  font-weight:400;
+}
+@media (max-width:580px) {
+  .boost-loop {
+    flex-direction:column;
+    gap:.04em;
+    font-size:clamp(50px,18vw,72px);
+    line-height:.82;
+    white-space:normal;
+  }
+  .boost-loop span {
+    transform:none;
+    margin:.02em 0;
+    font-size:.34em;
+  }
+  .finale p {
+    max-width:330px;
+    padding:0 10px;
+  }
+}
