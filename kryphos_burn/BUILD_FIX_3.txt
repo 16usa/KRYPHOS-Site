@@ -1,0 +1,12 @@
+KRYPHOS Solana 2.1.0 dependency fix.
+
+The remaining block-buffer 0.12.x came from a dependency graph that could still
+resolve newer Solana 2.x crates because Anchor 0.31.1 itself declares
+`solana-program = "2"`.
+
+This patch adds an exact `solana-program = "=2.1.0"` constraint so Anchor,
+Pyth and the KRYPHOS program resolve against the same Solana 2.1.0 family,
+matching the installed SBF toolchain.
+
+No burn logic, Program ID, website files, deploy configuration, server command,
+or restart behavior is changed.
