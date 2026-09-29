@@ -1,0 +1,15 @@
+KRYPHOS BLAKE3 compatibility fix.
+
+The dependency tree now proves the remaining block-buffer 0.12.1 comes from:
+  solana-program 2.1.0
+    -> blake3 1.8.7 (traits-preview)
+      -> digest 0.11
+        -> block-buffer 0.12.1
+
+Solana 2.1.x declares blake3 ^1.5.4, so blake3 1.5.5 is valid for the same
+Solana release line. blake3 1.5.5 uses digest 0.10.x and avoids the Rust
+edition-2024 block-buffer branch that Cargo 1.79 cannot parse.
+
+This patch changes dependency resolution only. It does not change burn logic,
+Program ID, website files, deployment configuration, server commands, or
+restart/run behavior.

@@ -7,21 +7,15 @@ cd "$ROOT"
 
 source "$SCRIPT_DIR/env.sh"
 
-echo "KRYPHOS Pyth/Solana dependency unification + SBF build"
+echo "KRYPHOS dependency unification + BLAKE3 compatibility + SBF build"
 echo "This does NOT start or restart the website."
 echo
 
-# Recreate the lockfile from the pinned KRYPHOS dependencies.
 rm -f Cargo.lock
 cargo generate-lockfile
 
-# pythnet-sdk 2.3.1 intentionally declares very broad optional ranges:
-#   anchor-lang >=0.28.0
-#   solana-program >=1.13.6
-# In 2026 Cargo therefore resolves a second, much newer graph
-# (Anchor 1.x + Solana 5.x), even though KRYPHOS itself is pinned to
-# Anchor 0.31.1 + Solana 2.1.0. Both older versions satisfy pythnet's
-# declared ranges, so force that transitive branch onto the same graph.
+# pythnet-sdk has broad ranges. Keep its transitive graph on the same
+# Anchor/Solana family used by KRYPHOS.
 if cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -q 'anchor-lang v1\.'; then
   echo "Unifying pythnet-sdk anchor-lang -> 0.31.1"
   cargo update -p anchor-lang@1.2.0 --precise 0.31.1
@@ -32,14 +26,20 @@ if cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -q 'solana-program v5\.1\.0'
   cargo update -p solana-program@5.1.0 --precise 2.1.0
 fi
 
-echo
-echo "Resolved Pyth branch:"
-cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -E \
-  'pythnet-sdk|anchor-lang v|solana-program v|sha2 v|blake3 v|block-buffer v' \
-  || true
+# Solana 2.1.x accepts blake3 ^1.5.4. Force the last compatible pre-digest-0.11
+# release so the SBF Cargo 1.79 toolchain never sees Rust-edition-2024
+# block-buffer 0.12.x.
+if grep -A1 '^name = "blake3"$' Cargo.lock | grep -q '^version = "1\.8\.7"'; then
+  echo "Pinning blake3 1.8.7 -> 1.5.5"
+  cargo update -p blake3@1.8.7 --precise 1.5.5
+fi
 
-# Refuse to enter SBF compilation if a second future Anchor/Solana graph
-# or the known Rust-2024 block-buffer is still present.
+echo
+echo "Resolved critical branches:"
+cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -E \
+  'pythnet-sdk|anchor-lang v|solana-program v' || true
+cargo tree -i blake3@1.5.5 --depth 2 || true
+
 if cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -q 'anchor-lang v1\.'; then
   echo "ERROR: pythnet-sdk still resolves Anchor 1.x."
   exit 1
@@ -47,6 +47,11 @@ fi
 
 if cargo tree -p pythnet-sdk@2.3.1 --depth 2 | grep -q 'solana-program v5\.'; then
   echo "ERROR: pythnet-sdk still resolves Solana program 5.x."
+  exit 1
+fi
+
+if grep -A1 '^name = "blake3"$' Cargo.lock | grep -q '^version = "1\.8\.'; then
+  echo "ERROR: blake3 1.8.x is still present."
   exit 1
 fi
 
